@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="com.example.mapper.RefreshTokenMapper">
+
+  <select id="findByUsername" resultType="com.example.play_the_piano.refreshToken.entity.RefreshToken">
+    SELECT * FROM users WHERE username = #{username}
+  </select>
+
+</mapper>
