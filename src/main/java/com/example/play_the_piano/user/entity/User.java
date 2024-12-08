@@ -26,6 +26,8 @@ public class User extends TimeStamped {
 
 	private String username;
 
+	private String nickname;
+
 	private String password;
 
 	@Enumerated(EnumType.STRING)
