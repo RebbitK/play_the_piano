@@ -1,11 +1,11 @@
 package com.example.play_the_piano.refreshToken.repository;
 
-import com.example.play_the_piano.refreshToken.entity.RefreshToken;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.play_the_piano.user.entity.User;
+import org.apache.ibatis.annotations.Mapper;
 
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken,Long> {
+@Mapper
+public interface RefreshTokenRepository  {
 
-	Optional<RefreshToken> findByUserId(Long userId);
+	User findByUsername(String username);
 
 }
