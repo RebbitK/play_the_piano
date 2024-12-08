@@ -68,7 +68,7 @@ public class JwtUtil {
 
 	public void deleteRefreshToken(Long userId) {
 		Optional<RefreshToken> checkToken = refreshTokenRepository.findByUserId(userId);
-		checkToken.ifPresent(refreshTokenRepository::delete);
+		checkToken.ifPresent(refreshTokenRepository::deleteRefreshToken);
 	}
 
 	public Claims getUserInfoFromToken(String token) {
@@ -92,7 +92,7 @@ public class JwtUtil {
 				.compact();
 		RefreshToken token = RefreshToken.builder().refreshToken(refreshToken).userId(userId)
 			.build();
-		refreshTokenRepository.save(token);
+		refreshTokenRepository.insertRefreshToken(token);
 		return accessToken;
 	}
 

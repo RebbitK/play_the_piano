@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mapper namespace="com.example.mapper.RefreshTokenMapper">
 
-  <select id="findByUsername" resultType="com.example.play_the_piano.refreshToken.entity.RefreshToken">
-    SELECT * FROM users WHERE username = #{username}
+  <select id="findByUserId" resultType="com.example.play_the_piano.refreshToken.entity.RefreshToken">
+    SELECT * FROM refreshToken WHERE userId = #{userId}
   </select>
 
+  <insert id="insertRefreshToken" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO refreshToken (refreshToken,userId) VALUES (#{refreshToken}, #{userId})
+  </insert>
+
+  <delete id="deleteRefreshToken" >
+    DELETE FROM refreshToken WHERE id = #{id}
+  </delete>
 </mapper>
