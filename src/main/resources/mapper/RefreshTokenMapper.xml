@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="com.example.mapper.RefreshTokenMapper">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.play_the_piano.refreshToken.repository.RefreshTokenRepository">
 
   <select id="findByUserId" resultType="com.example.play_the_piano.refreshToken.entity.RefreshToken">
-    SELECT * FROM refreshToken WHERE userId = #{userId}
+    SELECT * FROM refresh_token WHERE user_id = #{userId}
   </select>
 
   <insert id="insertRefreshToken" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO refreshToken (refreshToken,userId) VALUES (#{refreshToken}, #{userId})
+    INSERT INTO refresh_token (refresh_token, user_id)
+    VALUES (#{refreshToken}, #{userId})
   </insert>
 
-  <delete id="deleteRefreshToken" >
-    DELETE FROM refreshToken WHERE id = #{id}
+  <delete id="deleteRefreshToken">
+    DELETE FROM refresh_token WHERE id = #{id}
   </delete>
 </mapper>
