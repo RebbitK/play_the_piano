@@ -1,5 +1,8 @@
 package com.example.play_the_piano.user.entity;
 
+import lombok.Getter;
+
+@Getter
 public enum RoleEnum {
 	STUDENT(Authority.STUDENT),
 	CUSTOMER(Authority.CUSTOMER),
@@ -9,10 +12,6 @@ public enum RoleEnum {
 
 	RoleEnum(String authority) {
 		this.authority = authority;
-	}
-
-	public String getAuthority() {
-		return authority;
 	}
 
 	public static class Authority {

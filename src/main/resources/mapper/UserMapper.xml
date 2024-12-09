@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="com.example.mapper.UserMapper">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.play_the_piano.user.repository.UserRepository">
 
   <select id="findByUsername" resultType="com.example.play_the_piano.user.entity.User">
     SELECT * FROM users WHERE username = #{username}
   </select>
 
   <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO users (username, password, email)
-    VALUES (#{username}, #{password}, #{email})
+    INSERT INTO users (username,nickname,password,role,phone_number,consent,created_at, modified_at)
+    VALUES (#{username},#{nickname} ,#{password},#{role},#{phoneNumber},#{consent}, NOW(), NOW())
   </insert>
 
   <delete id="deleteUser">
