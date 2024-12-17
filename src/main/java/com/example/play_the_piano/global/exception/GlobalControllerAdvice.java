@@ -22,17 +22,15 @@ public class GlobalControllerAdvice {
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<CommonResponse<ErrorResponse>> handleValidationExceptions(
 		MethodArgumentNotValidException ex, HttpServletRequest request) {
-		Map<String, String> errors = new HashMap<>();
-		ex.getBindingResult().getAllErrors()
-			.forEach(c -> errors.put(((FieldError) c).getField(), c.getDefaultMessage()));
-		for (Map.Entry<String, String> entry : errors.entrySet()) {
-			String errorCode = entry.getKey();
-			String errorMessage = entry.getValue();
-			log.error(">>>MethodArgumentNotValidException<<< \n url: {}, errorCode: {}, msg: {}",
-				request.getRequestURI(), errorCode, errorMessage);
-		}
-		return createResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+		String errorMessage = ex.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.map(error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Unknown validation error")
+			.findFirst()
+			.orElse("Validation failed");
+		return createResponse(HttpStatus.BAD_REQUEST, errorMessage);
 	}
+
 
 	@ExceptionHandler({IllegalArgumentException.class, NullPointerException.class,
 		DuplicateKeyException.class})
