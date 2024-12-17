@@ -6,9 +6,22 @@
     SELECT * FROM users WHERE username = #{username}
   </select>
 
+  <select id="existsByUsername" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM users
+    WHERE username = #{username}
+  </select>
+
+  <select id="existsByNickname" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM users
+    WHERE nickname = #{nickname}
+  </select>
+
+
   <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO users (username,nickname,password,role,phone_number,consent,created_at, modified_at)
-    VALUES (#{username},#{nickname} ,#{password},#{role},#{phoneNumber},#{consent}, NOW(), NOW())
+    INSERT INTO users (username,nickname,password,role,email,consent,created_at, modified_at)
+    VALUES (#{username},#{nickname} ,#{password},#{role},#{email},#{consent}, NOW(), NOW())
   </insert>
 
   <delete id="deleteUser">

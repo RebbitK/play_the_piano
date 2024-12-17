@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class SingUpRequestDto {
+public class SignupRequestDto {
 
 	@NotBlank(message = "아이디는 필수 입력값입니다.")
 	@Pattern(regexp = "^[a-z0-9]{4,20}$", message = "아이디는 영문 소문자와 숫자 4~12자리여야 합니다.")
@@ -22,7 +22,9 @@ public class SingUpRequestDto {
 		message = "비밀번호는 영어와 숫자가 각각 1개 이상 포함된 8자 ~ 20자의 비밀번호여야 합니다.")
 	private String password;
 
-	private String phoneNumber;
+	private String checkPassword;
+
+	private String email;
 
 	private boolean consent;
 }
