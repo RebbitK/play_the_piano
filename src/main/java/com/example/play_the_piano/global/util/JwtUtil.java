@@ -63,7 +63,7 @@ public class JwtUtil {
 			.parseSignedClaims(refreshToken).getPayload();
 		RoleEnum roleEnum = RoleEnum.valueOf(info.get("role", String.class));
 		return createAccessToken(info.get("userId", Long.class),
-			info.get("username", String.class), roleEnum);
+			info.get("username", String.class),info.get("nickname", String.class), roleEnum);
 	}
 
 	public void deleteRefreshToken(Long userId) {
@@ -75,16 +75,17 @@ public class JwtUtil {
 		return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
 	}
 
-	public String createToken(Long userId, String username, RoleEnum role) {
+	public String createToken(Long userId, String username,String nickname, RoleEnum role) {
 		Date date = new Date();
 
-		String accessToken = createAccessToken(userId, username, role);
+		String accessToken = createAccessToken(userId, username,nickname, role);
 		deleteRefreshToken(userId);
 
 		String refreshToken = BEARER_PREFIX +
 			Jwts.builder()
 				.claim("userId", userId)
 				.claim("username", username)
+				.claim("nickname",nickname)
 				.claim("role", role)
 				.setIssuedAt(new Date(date.getTime())) // 토큰 발행 시간 정보
 				.setExpiration(new Date(date.getTime() + REFRESHTOKENTIME)) // set Expire Time
@@ -96,7 +97,7 @@ public class JwtUtil {
 		return accessToken;
 	}
 
-	public String createAccessToken(Long userId, String username, RoleEnum role) {
+	public String createAccessToken(Long userId, String username,String nickname, RoleEnum role) {
 		Date date = new Date();
 
 		long TOKEN_TIME = 60 * 60 * 10000;
@@ -104,6 +105,7 @@ public class JwtUtil {
 			Jwts.builder()
 				.claim("userId", userId)
 				.claim("username", username)
+				.claim("nickname",nickname)
 				.claim("role", role)
 				.setExpiration(new Date(date.getTime() + TOKEN_TIME))
 				.setIssuedAt(date)
