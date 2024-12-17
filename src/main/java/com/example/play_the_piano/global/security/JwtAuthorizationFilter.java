@@ -46,7 +46,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 					String token = jwtUtil.validateRefreshToken(
 						jwtUtil.getMemberInfoFromExpiredToken(tokenValue).get("userId",
 							Long.class));
-					response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
+					response.setHeader(JwtUtil.AUTHORIZATION_HEADER, token);
 					ObjectNode json = new ObjectMapper().createObjectNode();
 					json.put("message", "새로운 토큰이 발급되었습니다.                          ");
 					String newResponse = new ObjectMapper().writeValueAsString(json);
@@ -90,8 +90,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 	private Authentication createAuthentication(Claims info) {
 		Long userId = info.get("userId", Long.class);
 		String username = info.get("username", String.class);
+		String nickname = info.get("nickname", String.class);
 		String authority = info.get("role", String.class);
-		User user = new User(userId, username,authority);
+		User user = new User(userId, username,nickname,authority);
 		UserDetails userDetails = new UserDetailsImpl(user);
 		return new CustomAuthentication(userDetails);
 	}
