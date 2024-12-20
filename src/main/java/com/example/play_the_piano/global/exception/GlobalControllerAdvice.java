@@ -1,6 +1,7 @@
 package com.example.play_the_piano.global.exception;
 
 import com.example.play_the_piano.global.common.CommonResponse;
+import com.example.play_the_piano.global.exception.custom.SendEmailException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,14 @@ public class GlobalControllerAdvice {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
 			ex.getMessage(), HttpStatus.UNAUTHORIZED, request.getRequestURI(), ex);
 		return createResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
+	}
+
+	@ExceptionHandler({SendEmailException.class})
+	public ResponseEntity<CommonResponse<ErrorResponse>> handleInternalServerErrorException(Exception ex,
+		HttpServletRequest request) {
+		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
+			ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI(), ex);
+		return createResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
 	}
 
 

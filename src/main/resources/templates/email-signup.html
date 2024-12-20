@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Play The Piano</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      border: 1px solid #ddd;
+    }
+
+    .header {
+      background-color: #4caf50;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .content {
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .highlight-box {
+      background-color: #f4f4f4;
+      color: #333;
+      padding: 20px;
+      text-align: center;
+      margin: 20px 0;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: bold;
+      border: 1px solid #ddd;
+    }
+
+    .footer {
+      padding: 15px;
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+      border-top: 1px solid #ddd;
+    }
+
+    .footer a {
+      color: #4caf50;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    Play The Piano
+  </div>
+  <div class="content">
+    <h1 style="font-size: 22px; color: #333;">이메일 인증번호 안내</h1>
+    <p>안녕하세요, <strong>Play The Piano</strong>에 가입해주셔서 감사합니다.</p>
+    <p>아래의 <strong>[이메일 인증번호]</strong>를 입력하여 본인 확인을 완료해주세요.</p>
+
+    <div class="highlight-box" th:text="${code}">
+      <!-- 인증번호가 여기에 표시됩니다 -->
+    </div>
+  </div>
+</div>
+</body>
+</html>

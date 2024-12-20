@@ -2,6 +2,7 @@ package com.example.play_the_piano.user.controller;
 
 import com.example.play_the_piano.global.common.CommonResponse;
 import com.example.play_the_piano.global.util.JwtUtil;
+import com.example.play_the_piano.user.dto.CheckEmailDto;
 import com.example.play_the_piano.user.dto.CheckNicknameDto;
 import com.example.play_the_piano.user.dto.CheckUsernameDto;
 import com.example.play_the_piano.user.dto.LoginRequestDto;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
-@RestController
+@RestController("/auth")
 @Slf4j
 public class UserController {
 
@@ -28,7 +29,7 @@ public class UserController {
 
 	private final JwtUtil jwtUtil;
 
-	@PostMapping("/auth/signup")
+	@PostMapping("/signup")
 	public ResponseEntity<CommonResponse<SignupResponseDto>> singUp(@Valid @RequestBody SignupRequestDto requestDto){
 		SignupResponseDto responseDto = userService.insertUser(requestDto);
 		return ResponseEntity.status(HttpStatus.OK.value())
@@ -38,7 +39,7 @@ public class UserController {
 				.build());
 	}
 
-	@PostMapping("/auth/login")
+	@PostMapping("/login")
 	public ResponseEntity<CommonResponse<LoginResponseDto>> login(@RequestBody LoginRequestDto requestDto,
 		HttpServletResponse response){
 		LoginResponseDto responseDto = userService.login(requestDto);
@@ -50,7 +51,7 @@ public class UserController {
 				.build());
 	}
 
-	@PostMapping("/auth/check-username")
+	@PostMapping("/check-username")
 	public ResponseEntity<CommonResponse<Boolean>> checkUsername(@Valid @RequestBody CheckUsernameDto usernameDto){
 		Boolean check = userService.checkUsername(usernameDto);
 		return ResponseEntity.status(HttpStatus.OK.value())
@@ -60,12 +61,22 @@ public class UserController {
 				.build());
 	}
 
-	@PostMapping("/auth/check-nickname")
+	@PostMapping("/check-nickname")
 	public ResponseEntity<CommonResponse<Boolean>> checkNickname(@Valid @RequestBody CheckNicknameDto nicknameDto){
 		Boolean check = userService.checkNickname(nicknameDto);
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<Boolean>builder()
 				.msg("check nickname successful")
+				.data(check)
+				.build());
+	}
+
+	@PostMapping("/check-email")
+	public ResponseEntity<CommonResponse<Boolean>> checkEmail(@Valid @RequestBody CheckEmailDto emailDto){
+		Boolean check = userService.checkEmail(emailDto);
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Boolean>builder()
+				.msg("check email successful")
 				.data(check)
 				.build());
 	}
