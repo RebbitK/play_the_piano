@@ -80,7 +80,7 @@ public class RedisConfig {
 				RedisSerializationContext.SerializationPair.fromSerializer(
 					genericJackson2JsonRedisSerializer)) // Value Serializer 변경
 			.disableCachingNullValues()
-			.entryTtl(Duration.ofMinutes(10L));
+			.entryTtl(Duration.ofMinutes(5L));
 
 		builder.cacheDefaults(configuration);
 
