@@ -1,6 +1,9 @@
 package com.example.play_the_piano.global.exception;
 
 import com.example.play_the_piano.global.common.CommonResponse;
+import com.example.play_the_piano.global.exception.custom.EmailAlreadyRegisteredException;
+import com.example.play_the_piano.global.exception.custom.InvalidAuthCodeException;
+import com.example.play_the_piano.global.exception.custom.PasswordUpdateFailedException;
 import com.example.play_the_piano.global.exception.custom.SendEmailException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -34,7 +37,8 @@ public class GlobalControllerAdvice {
 
 
 	@ExceptionHandler({IllegalArgumentException.class, NullPointerException.class,
-		DuplicateKeyException.class})
+		DuplicateKeyException.class, PasswordUpdateFailedException.class,
+		EmailAlreadyRegisteredException.class})
 	public ResponseEntity<CommonResponse<ErrorResponse>> handleBadRequestException(Exception ex,
 		HttpServletRequest request) {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
@@ -42,7 +46,8 @@ public class GlobalControllerAdvice {
 		return createResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
 	}
 
-	@ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class})
+	@ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class,
+		InvalidAuthCodeException.class})
 	public ResponseEntity<CommonResponse<ErrorResponse>> handleUnauthorizedException(Exception ex,
 		HttpServletRequest request) {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
