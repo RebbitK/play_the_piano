@@ -163,7 +163,7 @@ public class UserService {
 		if(userRepository.findByEmail(emailDto.getEmail()).isPresent()){
 			throw new EmailAlreadyRegisteredException("이 이메일로 이미 가입된 계정이 있습니다.");
 		}
-		sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-username"),code,"findUsername:");
+		sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-findUsername"),code,"findUsername:");
 		return true;
 	}
 
@@ -181,7 +181,7 @@ public class UserService {
 
 	public boolean sendFindPasswordEmail(SendEmailDto emailDto){
 		String code = createCode();
-		sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-password"),code,"findPassword:");
+		sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-findPassword"),code,"findPassword:");
 		return true;
 	}
 
