@@ -15,4 +15,12 @@ public interface UserRepository {
 
 	Optional<User> findByUsername(String username);
 
+	Optional<String> findUsernameByEmail(String email);
+
+	Optional<Boolean> findByEmail(String email);
+
+	Optional<Long> findIdByEmail(String email);
+
+	Optional<Integer> updatePassword(Long id,String password);
+
 }

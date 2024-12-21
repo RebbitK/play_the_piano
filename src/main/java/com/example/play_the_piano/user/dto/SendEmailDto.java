@@ -7,12 +7,11 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class CheckEmailDto {
+public class SendEmailDto {
 
 	@NotBlank(message = "이메일은 필수 입력사항 입니다.")
 	@Pattern(regexp = "^(?!.*\\.\\.)[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",message = "올바르지 않은 형식의 이메일 주소 입니다.")
 	private String email;
 
-	private String code;
 
 }
