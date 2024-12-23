@@ -17,8 +17,6 @@ public interface UserRepository {
 
 	Optional<String> findUsernameByEmail(String email);
 
-	Optional<Boolean> findByEmail(String email);
-
 	Optional<Long> findIdByEmail(String email);
 
 	Optional<Integer> updatePassword(Long id,String password);

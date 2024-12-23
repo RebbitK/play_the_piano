@@ -47,7 +47,7 @@ public class UserService {
 
 	@Transactional
 	@Async
-	public void sendEmail(String to, String subject, String text,String code,String key) {
+	public void sendEmail(String to, String subject, String text, String code, String key) {
 		try {
 			MimeMessage message = mailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -58,7 +58,7 @@ public class UserService {
 
 			mailSender.send(message);
 
-			redisUtil.setDataExpire(key+to,code,1000L * 60L * 5);
+			redisUtil.setDataExpire(key + to, code, 1000L * 60L * 5);
 		} catch (Exception e) {
 			throw new SendEmailException("인증 메일 발송 중 오류가 발생하였습니다.");
 		}
@@ -87,19 +87,23 @@ public class UserService {
 	}
 
 	public boolean checkSendSignupEmail(CheckEmailDto emailDto) {
-		if(redisUtil.getData("Auth:"+emailDto.getEmail())==null||redisUtil.getData("Auth:"+emailDto.getEmail()).isEmpty()){
-			throw new InvalidAuthCodeException("유효하지 않은 이메일 입니다.");
+		String redisCode = redisUtil.getData("Auth:" + emailDto.getEmail());
+		if (redisCode == null || redisCode.isEmpty()) {
+			throw new InvalidAuthCodeException("이메일에 대한 인증 요청이 존재하지 않거나 만료되었습니다.");
 		}
-		if(emailDto.getCode()==null||!emailDto.getCode().equals(redisUtil.getData("Auth:"+emailDto.getEmail()))){
-			throw new InvalidAuthCodeException("유효하지 않은 인증번호 입니다.");
+		if (emailDto.getCode() == null || !emailDto.getCode().equals(redisCode)) {
+			throw new InvalidAuthCodeException("인증번호가 일치하지 않습니다.");
+		}
+		if (userRepository.findIdByEmail(emailDto.getEmail()).isPresent()) {
+			throw new EmailAlreadyRegisteredException("이 이메일로 이미 가입된 계정이 있습니다.");
 		}
 		return true;
 	}
 
 	public boolean sendSignupEmail(SendEmailDto emailDto) {
-
 		String code = createCode();
-			sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-signup"),code,"Auth:");
+		sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-signup"), code,
+			"Auth:");
 		return true;
 	}
 
@@ -158,57 +162,62 @@ public class UserService {
 			user.getRole());
 	}
 
-	public boolean sendFindUsernameEmail(SendEmailDto emailDto){
+	public boolean sendFindUsernameEmail(SendEmailDto emailDto) {
 		String code = createCode();
-		if(userRepository.findByEmail(emailDto.getEmail()).isPresent()){
-			throw new EmailAlreadyRegisteredException("이 이메일로 이미 가입된 계정이 있습니다.");
-		}
-		sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-findUsername"),code,"findUsername:");
+		sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-findUsername"),
+			code, "findUsername:");
 		return true;
 	}
 
-	public String findUsernameByEmail(CheckEmailDto emailDto){
-		if(redisUtil.getData("findUsername:"+emailDto.getEmail())==null||redisUtil.getData("findUsername:"+emailDto.getEmail()).isEmpty()){
-			throw new InvalidAuthCodeException("유효하지 않은 이메일 입니다.");
+	public String findUsernameByEmail(CheckEmailDto emailDto) {
+		String redisCode = redisUtil.getData("findUsername:" + emailDto.getEmail());
+		if (emailDto.getCode() == null) {
+			throw new InvalidAuthCodeException("인증번호를 입력하지 않았습니다.");
 		}
-		if(emailDto.getCode()==null||!emailDto.getCode().equals(redisUtil.getData("findUsername:"+emailDto.getEmail()))){
-			throw new InvalidAuthCodeException("유효하지 않은 인증번호 입니다.");
+		if (redisCode == null || redisCode.isEmpty()) {
+			throw new InvalidAuthCodeException("인증번호가 만료되었거나 존재하지 않습니다.");
+		}
+		if (!emailDto.getCode().equals(redisCode)) {
+			throw new InvalidAuthCodeException("인증번호가 일치하지 않습니다.");
 		}
 		return userRepository.findUsernameByEmail(emailDto.getEmail()).orElseThrow(
-			()-> new IllegalArgumentException("이 이메일로 가입된 아이디가 없습니다.")
+			() -> new EmailAlreadyRegisteredException("이 이메일로 가입된 아이디가 없습니다.")
 		);
 	}
 
-	public boolean sendFindPasswordEmail(SendEmailDto emailDto){
+	public boolean sendFindPasswordEmail(SendEmailDto emailDto) {
 		String code = createCode();
-		sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-findPassword"),code,"findPassword:");
+		sendEmail(emailDto.getEmail(), "Play The Piano", setContext(code, "email-findPassword"),
+			code, "findPassword:");
 		return true;
 	}
 
-	public boolean findPasswordByEmail(CheckEmailDto emailDto){
-		if(redisUtil.getData("findPassword:"+emailDto.getEmail())==null||redisUtil.getData("findPassword:"+emailDto.getEmail()).isEmpty()){
-			throw new InvalidAuthCodeException("유효하지 않은 이메일 입니다.");
+	public boolean findPasswordByEmail(CheckEmailDto emailDto) {
+		String redisCode = redisUtil.getData("findPassword:" + emailDto.getEmail());
+		if (redisCode == null || redisCode.isEmpty()) {
+			throw new InvalidAuthCodeException("이메일에 해당하는 인증 요청이 존재하지 않습니다. 인증을 다시 시도해주세요.");
 		}
-		if(emailDto.getCode()==null||!emailDto.getCode().equals(redisUtil.getData("findPassword:"+emailDto.getEmail()))){
-			throw new InvalidAuthCodeException("유효하지 않은 인증번호 입니다.");
+		if (emailDto.getCode() == null || !emailDto.getCode().equals(redisCode)) {
+			throw new InvalidAuthCodeException("인증번호가 일치하지 않습니다.");
 		}
-		return userRepository.findByEmail(emailDto.getEmail()).orElseThrow(
-			()-> new IllegalArgumentException("이 이메일로 가입된 아이디가 없습니다.")
-		);
+		if(userRepository.findIdByEmail(emailDto.getEmail()).isEmpty()){
+			throw new EmailAlreadyRegisteredException("해당 이메일로 가입된 계정을 찾을 수 없습니다.");
+		}
+		return true;
 	}
 
 	@Transactional
-	public boolean updatePassword(UpdatePasswordDto passwordDto){
+	public boolean updatePassword(UpdatePasswordDto passwordDto) {
 		Long id = userRepository.findIdByEmail(passwordDto.getEmail()).orElseThrow(
-			()-> new InvalidAuthCodeException("유효하지 않은 이메일 입니다.")
+			() -> new InvalidAuthCodeException("유효하지 않은 이메일 입니다.")
 		);
 		if (!passwordDto.getPassword().equals(passwordDto.getCheckPassword())) {
 			throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 		}
 		String encodedPassword = passwordEncoder.encode(passwordDto.getPassword());
-		int update = userRepository.updatePassword(id,encodedPassword).orElseThrow(
-			()-> new PasswordUpdateFailedException("비밀번호 변경 중 오류가 발생했습니다.")
+		int update = userRepository.updatePassword(id, encodedPassword).orElseThrow(
+			() -> new PasswordUpdateFailedException("비밀번호 변경 중 오류가 발생했습니다.")
 		);
-		return update == 1;
+		return true;
 	}
 }
