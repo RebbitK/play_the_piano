@@ -144,7 +144,7 @@ public class UserService {
 			throw new IllegalArgumentException("닉네임 중복 체크를 확인해 주세요.");
 		}
 		if (!requestDto.getPassword().equals(requestDto.getCheckPassword())) {
-			throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+			throw new IllegalArgumentException("두 비밀번호가 일치하지 않습니다.");
 		}
 		String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 		User user = new User(requestDto, encodedPassword);
@@ -212,12 +212,10 @@ public class UserService {
 			() -> new InvalidAuthCodeException("유효하지 않은 이메일 입니다.")
 		);
 		if (!passwordDto.getPassword().equals(passwordDto.getCheckPassword())) {
-			throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+			throw new IllegalArgumentException("두 비밀번호가 일치하지 않습니다.");
 		}
 		String encodedPassword = passwordEncoder.encode(passwordDto.getPassword());
-		int update = userRepository.updatePassword(id, encodedPassword).orElseThrow(
-			() -> new PasswordUpdateFailedException("비밀번호 변경 중 오류가 발생했습니다.")
-		);
+		userRepository.updatePassword(id, encodedPassword);
 		return true;
 	}
 }

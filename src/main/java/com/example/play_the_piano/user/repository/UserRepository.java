@@ -19,6 +19,6 @@ public interface UserRepository {
 
 	Optional<Long> findIdByEmail(String email);
 
-	Optional<Integer> updatePassword(Long id,String password);
+	void updatePassword(Long id,String password);
 
 }
