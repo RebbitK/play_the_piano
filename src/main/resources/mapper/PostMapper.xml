@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.play_the_piano.post.repository.PostRepository">
+
+  <insert id="createPost" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO post (category,content,title,user_id,created_at, modified_at)
+    VALUES (#{category},#{content} ,#{title}, #{user.id},NOW(), NOW())
+  </insert>
+  
+  <update id="updateContent">
+    UPDATE users
+    SET consent = #{content}
+    WHERE id = #{id}
+  </update>
+</mapper>
