@@ -31,7 +31,6 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class UserService {
 

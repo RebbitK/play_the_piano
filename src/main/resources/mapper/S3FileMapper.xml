@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.play_the_piano.s3file.repository.S3FileRepository">
+  <insert id="createS3File" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO s3file (url,post_id,created_at, modified_at)
+    VALUES (#{url},#{post.id} , NOW(), NOW())
+  </insert>
+</mapper>
