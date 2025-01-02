@@ -1,5 +1,6 @@
 package com.example.play_the_piano.user.entity;
 
+import com.example.play_the_piano.global.entity.TimeStamped;
 import com.example.play_the_piano.user.dto.SignupRequestDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "users")
-public class User {
+public class User extends TimeStamped {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,10 +38,6 @@ public class User {
 	private String email;
 
 	private boolean consent;
-
-	private LocalDateTime createdAt;
-
-	private LocalDateTime modifiedAt;
 
 	public User(Long userId, String username, String nickname, String role) {
 		this.id = userId;

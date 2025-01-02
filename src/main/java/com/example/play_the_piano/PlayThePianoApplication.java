@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableCaching
+@EnableJpaAuditing
 @MapperScan("com.example.play_the_piano")
 public class PlayThePianoApplication {
 

@@ -7,6 +7,7 @@ import com.example.play_the_piano.global.exception.custom.InvalidAuthCodeExcepti
 import com.example.play_the_piano.global.exception.custom.InvalidBase64ExceptionException;
 import com.example.play_the_piano.global.exception.custom.InvalidPositionException;
 import com.example.play_the_piano.global.exception.custom.PasswordUpdateFailedException;
+import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
 import com.example.play_the_piano.global.exception.custom.S3Exception;
 import com.example.play_the_piano.global.exception.custom.SendEmailException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,6 +48,14 @@ public class GlobalControllerAdvice {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
 			ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI(), ex);
 		return createResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+	}
+
+	@ExceptionHandler({PostNotFoundException.class})
+	public ResponseEntity<CommonResponse<ErrorResponse>> handlePostNotFoundException(Exception ex,
+		HttpServletRequest request) {
+		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
+			ex.getMessage(), HttpStatus.NOT_FOUND, request.getRequestURI(), ex);
+		return createResponse(HttpStatus.NOT_FOUND, ex.getMessage());
 	}
 
 	@ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class,
