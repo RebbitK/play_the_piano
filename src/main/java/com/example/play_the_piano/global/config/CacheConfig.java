@@ -1,5 +1,7 @@
 package com.example.play_the_piano.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -17,17 +19,25 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching
 public class CacheConfig {
 
+	@Bean(name = "cacheObjectMapper")
+	public ObjectMapper objectMapper() {
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.registerModule(new JavaTimeModule());
+		return objectMapper;
+	}
+
 	@Bean
 	@Primary
-	public CacheManager userCacheManager(RedisConnectionFactory connectionFactory) {
+	public CacheManager userCacheManager(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
 		RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
 			.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
 				new StringRedisSerializer()))
 			.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
-				new GenericJackson2JsonRedisSerializer()))
+				new GenericJackson2JsonRedisSerializer(objectMapper)))
 			.entryTtl(Duration.ofMinutes(5L));
 
 		return RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(connectionFactory)
-			.cacheDefaults(redisCacheConfiguration).build();
+			.cacheDefaults(redisCacheConfiguration)
+			.build();
 	}
 }
