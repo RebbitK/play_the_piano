@@ -3,6 +3,7 @@ package com.example.play_the_piano.post.service;
 import com.example.play_the_piano.global.exception.custom.Base64ConversionException;
 import com.example.play_the_piano.global.exception.custom.InvalidBase64ExceptionException;
 import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
+import com.example.play_the_piano.global.exception.custom.S3Exception;
 import com.example.play_the_piano.post.dto.GetPostResponseDto;
 import com.example.play_the_piano.post.dto.GetPostsResponseDto;
 import com.example.play_the_piano.post.dto.PostRequestDto;
@@ -41,9 +42,14 @@ public class PostService {
 
 	@Transactional
 	@CacheEvict(value = "posts", allEntries = true)
-	public void createPost(PostRequestDto postRequestDto, User user) {
+	public Long createPost(PostRequestDto postRequestDto, User user) {
 		List<String> base64Images = extractBase64ImagesFromContent(postRequestDto.getContent());
-		Post post = new Post(postRequestDto,user);
+		String content = postRequestDto.getContent();
+		if (!base64Images.isEmpty()) {
+			postRequestDto.setContent("");
+		}
+		Post post = new Post(postRequestDto, user);
+		postRepository.createPost(post);
 		if (!base64Images.isEmpty()) {
 			Map<String, String> base64ToUrlMap = new HashMap<>();
 
@@ -53,34 +59,45 @@ public class PostService {
 				base64ToUrlMap.put(base64Image, uploadedImageUrl);
 			}
 
-			String updatedContent = updateContentWithImageUrls(postRequestDto.getContent(),
+			String updatedContent = updateContentWithImageUrls(content,
 				base64ToUrlMap);
 			post.updateContent(updatedContent);
+			postRepository.updateContent(post.getId(), post.getContent());
 		}
-		if (postRequestDto.getFiles() != null && !postRequestDto.getFiles().isEmpty()) {
-			for (MultipartFile file : postRequestDto.getFiles()) {
-				fileService.upload(file, "files/", post);
-			}
-		}
-		postRepository.createPost(post);
+		return post.getId();
 	}
 
 	@Cacheable(value = "posts", key = "#category.name() + '_' + #page + '_' + #size", condition = "#size > 0")
 	public GetPostsResponseDto getPosts(PostEnum category, int page, int size) {
 		int offset = (page - 1) * size;
 		int totalPage = postRepository.getTotalPostsCountByCategory(category.name()) / size + 1;
-		List<PostThumbnailDto> posts = postRepository.getPostsByCategory(category.name(), offset, size);
+		List<PostThumbnailDto> posts = postRepository.getPostsByCategory(category.name(), offset,
+			size);
 		List<String> titles = posts.stream().map(PostThumbnailDto::getTitle).toList();
 		List<String> thumbnails = posts.stream().map(PostThumbnailDto::getThumbnailUrl).toList();
-		List<LocalDateTime> createdAts = posts.stream().map(PostThumbnailDto::getCreatedAt).toList();
-		
+		List<LocalDateTime> createdAts = posts.stream().map(PostThumbnailDto::getCreatedAt)
+			.toList();
+
 		return new GetPostsResponseDto(thumbnails, titles, totalPage, createdAts);
 	}
 
 	@Cacheable(value = "post", key = "#id")
 	public GetPostResponseDto getPost(Long id) {
-		return postRepository.getPostById(id)
+		return postRepository.getPostDtoById(id)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
+	}
+
+	public void uploadPostFile(MultipartFile file,Long postId,Long userId) {
+		Post post = postRepository.getPostById(postId)
+			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
+		if(file.isEmpty()){
+			throw new S3Exception("파일이 유효하지 않습니다.");
+		}
+		fileService.upload(file, "files/", post);
+	}
+
+	public void incrementViewCount(Long id) {
+		postRepository.updatePostViewCount(id);
 	}
 
 	private List<String> extractBase64ImagesFromContent(String content) {

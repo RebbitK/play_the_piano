@@ -1,31 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.play_the_piano.post.repository.PostRepository">
 
-  <insert id="createPost" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO post (category,content,title,user_id,view_count,created_at, modified_at)
-    VALUES (#{category},#{content} ,#{title} ,#{user.id},0,NOW(), NOW())
+  <insert id="createPost" useGeneratedKeys="true" keyProperty="id" >
+    INSERT INTO post (category, content, title, user_id, view_count, created_at, modified_at)
+    VALUES (#{category}, #{content}, #{title}, #{user.id}, 0, NOW(), NOW())
   </insert>
 
-  <select id="getPostsByCategory" parameterType="map" resultType="com.example.play_the_piano.post.dto.PostThumbnailDto">
-    SELECT title,IFNULL(SUBSTRING_INDEX(SUBSTRING_INDEX(content, 'src="', -1), '"', 1), '') AS thumbnailUrl,created_at as createdAt FROM post
+  <select id="getPostsByCategory" parameterType="map"
+    resultType="com.example.play_the_piano.post.dto.PostThumbnailDto">
+    SELECT title,
+           IFNULL(SUBSTRING_INDEX(SUBSTRING_INDEX(content, 'src="', -1), '"', 1),
+                  '') AS thumbnailUrl,
+           created_at as createdAt
+    FROM post
     WHERE category = #{category}
     ORDER BY created_at DESC
     LIMIT #{offset}, #{limit}
   </select>
 
   <select id="getTotalPostsCountByCategory" parameterType="string" resultType="int">
-    SELECT COUNT(*) FROM post WHERE category = #{category}
-  </select>
-
-  <select id="getPostById" parameterType="Long" resultType="com.example.play_the_piano.post.dto.GetPostResponseDto">
-    SELECT title,content,category,u.nickname as nickname,post.created_at as createdAt,post.modified_at as modifiedAt
+    SELECT COUNT(*)
     FROM post
-    JOIN piano.users u on u.id = post.user_id
-    WHERE post.id=#{id}
+    WHERE category = #{category}
   </select>
 
+  <select id="getPostById" parameterType="Long" resultType="com.example.play_the_piano.post.entity.Post">
+    SELECT *
+    FROM post
+    WHERE id = #{id}
+  </select>
 
+  <select id="getPostDtoById" parameterType="Long"
+    resultType="com.example.play_the_piano.post.dto.GetPostResponseDto">
+    SELECT title,
+           content,
+           category,
+           u.nickname       as nickname,
+           post.created_at  as createdAt,
+           post.modified_at as modifiedAt
+    FROM post
+           JOIN piano.users u on u.id = post.user_id
+    WHERE post.id = #{id}
+  </select>
+
+  <update id="updatePostViewCount" parameterType="Long">
+    UPDATE post
+    SET view_count = view_count+1
+    WHERE id= #{id}
+  </update>
+
+  <update id="updateContent">
+    UPDATE post
+    SET content = #{content}
+    WHERE id = #{id}
+  </update>
+
+<!--  <update id="updatePost" parameterType="Long">-->
+<!--    UPDATE post-->
+<!--    SET-->
+<!--        title = #{title},-->
+<!--        content = #{content},-->
+<!--        category = #{category}-->
+<!--    WHERE id =#{id}-->
+<!--  </update>-->
 
 
 </mapper>
