@@ -35,7 +35,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
-
 		String tokenValue = jwtUtil.resolveToken(request);
 		if (StringUtils.hasText(tokenValue)) {
 			try {
@@ -46,6 +45,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 					String token = jwtUtil.validateRefreshToken(
 						jwtUtil.getMemberInfoFromExpiredToken(tokenValue).get("userId",
 							Long.class));
+					response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+					response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+					response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH");
+					response.setHeader("Access-Control-Max-Age", "3600");
+					response.setHeader("Access-Control-Allow-Credentials", "true");
+					response.setHeader("Access-Control-Expose-Headers", "Authorization");
+
 					response.setHeader(JwtUtil.AUTHORIZATION_HEADER, token);
 					ObjectNode json = new ObjectMapper().createObjectNode();
 					json.put("message", "새로운 토큰이 발급되었습니다.                          ");

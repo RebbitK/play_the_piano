@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Slf4j
@@ -26,6 +27,8 @@ public class JwtUtil {
 
 	// Header KEY 값
 	public static final String AUTHORIZATION_HEADER = "Authorization";
+
+	public static final String REFRESH_TOKEN_HEADER = "Refresh-Token";
 
 	// Token 식별자
 	public static final String BEARER_PREFIX = "Bearer ";
@@ -47,7 +50,7 @@ public class JwtUtil {
 	}
 
 	public String resolveToken(HttpServletRequest request) {
-		String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+		String bearerToken = request.getHeader("Authorization");
 		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
 			return bearerToken.substring(7);
 		}
@@ -100,7 +103,7 @@ public class JwtUtil {
 	public String createAccessToken(Long userId, String username,String nickname, RoleEnum role) {
 		Date date = new Date();
 
-		long TOKEN_TIME =  60 * 10000;
+		long TOKEN_TIME =  60 * 1000;
 		return BEARER_PREFIX +
 			Jwts.builder()
 				.claim("userId", userId)
@@ -108,6 +111,18 @@ public class JwtUtil {
 				.claim("nickname",nickname)
 				.claim("role", role)
 				.setExpiration(new Date(date.getTime() + TOKEN_TIME))
+				.setIssuedAt(date)
+				.signWith(key)
+				.compact();
+	}
+
+	public String createClientToken(Long userId) {
+		Date date = new Date();
+
+		return BEARER_PREFIX +
+			Jwts.builder()
+				.claim("userId", userId)
+				.setExpiration(new Date(date.getTime()))
 				.setIssuedAt(date)
 				.signWith(key)
 				.compact();

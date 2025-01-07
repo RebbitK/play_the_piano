@@ -56,7 +56,6 @@ public class WebSecurityConfig {
 			authorizeHttpRequests
 				.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
 				.permitAll()
-
 				.requestMatchers("/posts/**").permitAll()
 				.requestMatchers("/auth/**").permitAll()
 				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
@@ -65,7 +64,7 @@ public class WebSecurityConfig {
 
 		);
 
-		// 필터 관리
+
 		http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
