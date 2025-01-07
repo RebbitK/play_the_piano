@@ -12,6 +12,7 @@ import com.example.play_the_piano.user.dto.SignupRequestDto;
 import com.example.play_the_piano.user.dto.SignupResponseDto;
 import com.example.play_the_piano.user.dto.UpdatePasswordDto;
 import com.example.play_the_piano.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,7 @@ public class UserController {
 		HttpServletResponse response){
 		LoginResponseDto responseDto = userService.login(requestDto);
 		response.setHeader(JwtUtil.AUTHORIZATION_HEADER,jwtUtil.createToken(responseDto.getId(),responseDto.getUsername(),responseDto.getNickname(),responseDto.getRole()));
+		response.setHeader(JwtUtil.REFRESH_TOKEN_HEADER,jwtUtil.createClientToken(responseDto.getId()));
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<LoginResponseDto>builder()
 				.msg("login successful")
@@ -143,6 +145,19 @@ public class UserController {
 			.body(CommonResponse.<Boolean>builder()
 				.msg("update password successful")
 				.data(check)
+				.build());
+	}
+
+	@PostMapping("/token")
+	public ResponseEntity<CommonResponse<Void>> updateToken(HttpServletRequest request,HttpServletResponse response){
+		String tokenValue = jwtUtil.resolveToken(request);
+		String token = jwtUtil.validateRefreshToken(
+			jwtUtil.getMemberInfoFromExpiredToken(tokenValue).get("userId",
+				Long.class));
+		response.setHeader(JwtUtil.AUTHORIZATION_HEADER, token);
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Void>builder()
+				.msg("update token successful")
 				.build());
 	}
 }
