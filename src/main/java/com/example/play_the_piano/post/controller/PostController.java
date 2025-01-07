@@ -4,19 +4,18 @@ import com.example.play_the_piano.global.common.CommonResponse;
 import com.example.play_the_piano.post.dto.GetPostResponseDto;
 import com.example.play_the_piano.post.dto.GetPostsResponseDto;
 import com.example.play_the_piano.post.dto.PostRequestDto;
-import com.example.play_the_piano.post.entity.Post;
+import com.example.play_the_piano.post.dto.PostUpdateRequestDto;
 import com.example.play_the_piano.post.entity.PostEnum;
 import com.example.play_the_piano.post.service.PostService;
 import com.example.play_the_piano.user.entity.UserDetailsImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,7 +47,7 @@ public class PostController {
 	@PostMapping("/files")
 	public ResponseEntity<CommonResponse<Void>> uploadFile(@RequestParam("file") MultipartFile file,
 		@RequestParam("postId") Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-		postService.uploadPostFile(file, postId, userDetails.getUser().getId());
+		postService.uploadPostFile(file, postId, userDetails.getUser());
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<Void>builder()
 				.msg("createPost successful")
@@ -78,9 +77,36 @@ public class PostController {
 				.build());
 	}
 
-	@GetMapping("/test")
-	public ResponseEntity<?> testLocalDateTime() {
-		return ResponseEntity.ok(LocalDateTime.now());
+	@PatchMapping("/{id}")
+	public ResponseEntity<CommonResponse<Void>> updatePost(@PathVariable Long id, @RequestBody
+	PostUpdateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+		postService.updatePost(requestDto, id, userDetails.getUser());
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Void>builder()
+				.msg("update Post successful")
+				.build());
 	}
+
+	@PatchMapping("/files")
+	public ResponseEntity<CommonResponse<Void>> updatePostFile(
+		@RequestParam("file") MultipartFile file,
+		@RequestParam("postId") Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+		postService.uploadPostFile(file, postId, userDetails.getUser());
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Void>builder()
+				.msg("update PostFile successful")
+				.build());
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<CommonResponse<Void>> deletePost(@PathVariable Long id,
+		@AuthenticationPrincipal UserDetailsImpl userDetails) {
+		postService.deletePost(id, userDetails.getUser());
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Void>builder()
+				.msg("delete Post successful")
+				.build());
+	}
+
 }
 

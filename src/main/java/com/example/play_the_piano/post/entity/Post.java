@@ -1,5 +1,6 @@
 package com.example.play_the_piano.post.entity;
 
+import com.example.play_the_piano.global.entity.Deleted;
 import com.example.play_the_piano.global.entity.TimeStamped;
 import com.example.play_the_piano.post.dto.PostRequestDto;
 import com.example.play_the_piano.user.entity.User;
@@ -35,6 +36,9 @@ public class Post extends TimeStamped {
 
 	private Integer viewCount;
 
+	@Enumerated(EnumType.STRING)
+	private Deleted deleted;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
 
@@ -43,6 +47,7 @@ public class Post extends TimeStamped {
 		this.category = requestDto.getCategory();
 		this.content = requestDto.getContent();
 		this.user = user;
+		deleted = Deleted.UNDELETE;
 	}
 
 	public void updateContent(String content) {

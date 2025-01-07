@@ -8,9 +8,12 @@ import com.example.play_the_piano.global.exception.custom.InvalidBase64Exception
 import com.example.play_the_piano.global.exception.custom.InvalidPositionException;
 import com.example.play_the_piano.global.exception.custom.PasswordUpdateFailedException;
 import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
+import com.example.play_the_piano.global.exception.custom.RoleNotAllowedException;
 import com.example.play_the_piano.global.exception.custom.S3Exception;
 import com.example.play_the_piano.global.exception.custom.SendEmailException;
+import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import javax.management.relation.RoleNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -42,7 +45,7 @@ public class GlobalControllerAdvice {
 	@ExceptionHandler({IllegalArgumentException.class, NullPointerException.class,
 		DuplicateKeyException.class, PasswordUpdateFailedException.class,
 		EmailAlreadyRegisteredException.class, S3Exception.class, InvalidPositionException.class,
-		InvalidBase64ExceptionException.class})
+		InvalidBase64ExceptionException.class, UserNotFoundException.class})
 	public ResponseEntity<CommonResponse<ErrorResponse>> handleBadRequestException(Exception ex,
 		HttpServletRequest request) {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
@@ -56,6 +59,14 @@ public class GlobalControllerAdvice {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
 			ex.getMessage(), HttpStatus.NOT_FOUND, request.getRequestURI(), ex);
 		return createResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+	}
+
+	@ExceptionHandler({RoleNotAllowedException.class})
+	public ResponseEntity<CommonResponse<ErrorResponse>> handleForbiddenException(Exception ex,
+		HttpServletRequest request) {
+		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
+			ex.getMessage(), HttpStatus.FORBIDDEN, request.getRequestURI(), ex);
+		return createResponse(HttpStatus.FORBIDDEN, ex.getMessage());
 	}
 
 	@ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class,

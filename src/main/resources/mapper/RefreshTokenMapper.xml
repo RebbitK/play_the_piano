@@ -3,7 +3,7 @@
 <mapper namespace="com.example.play_the_piano.refreshToken.repository.RefreshTokenRepository">
 
   <select id="findByUserId" resultType="com.example.play_the_piano.refreshToken.entity.RefreshToken">
-    SELECT * FROM refresh_token WHERE user_id = #{userId}
+    SELECT id,refresh_token as refreshToken,user_id as userId FROM refresh_token WHERE user_id = #{userId}
   </select>
 
   <insert id="insertRefreshToken" useGeneratedKeys="true" keyProperty="id">

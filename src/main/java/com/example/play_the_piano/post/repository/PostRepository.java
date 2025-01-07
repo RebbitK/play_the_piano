@@ -2,6 +2,7 @@ package com.example.play_the_piano.post.repository;
 
 import com.example.play_the_piano.post.dto.GetPostResponseDto;
 import com.example.play_the_piano.post.dto.PostThumbnailDto;
+import com.example.play_the_piano.post.dto.PostUpdateRequestDto;
 import com.example.play_the_piano.post.entity.Post;
 import java.util.List;
 import java.util.Optional;
@@ -24,4 +25,8 @@ public interface PostRepository {
 	void updatePostViewCount(Long id);
 
 	void updateContent(@Param("id") Long id, @Param("content") String content);
+
+	void deletePost(Long id);
+
+	void updatePost(PostUpdateRequestDto requestDto);
 }

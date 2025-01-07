@@ -3,18 +3,23 @@ package com.example.play_the_piano.post.service;
 import com.example.play_the_piano.global.exception.custom.Base64ConversionException;
 import com.example.play_the_piano.global.exception.custom.InvalidBase64ExceptionException;
 import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
+import com.example.play_the_piano.global.exception.custom.RoleNotAllowedException;
 import com.example.play_the_piano.global.exception.custom.S3Exception;
+import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
 import com.example.play_the_piano.post.dto.GetPostResponseDto;
 import com.example.play_the_piano.post.dto.GetPostsResponseDto;
 import com.example.play_the_piano.post.dto.PostRequestDto;
 import com.example.play_the_piano.post.dto.PostThumbnailDto;
+import com.example.play_the_piano.post.dto.PostUpdateRequestDto;
 import com.example.play_the_piano.post.entity.Post;
 import com.example.play_the_piano.post.entity.PostEnum;
 import com.example.play_the_piano.post.repository.PostRepository;
 import com.example.play_the_piano.s3file.customMultipartFile.CustomMultipartFile;
+import com.example.play_the_piano.s3file.entity.TypeEnum;
 import com.example.play_the_piano.s3file.service.S3FileService;
+import com.example.play_the_piano.user.entity.RoleEnum;
 import com.example.play_the_piano.user.entity.User;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +48,7 @@ public class PostService {
 	@Transactional
 	@CacheEvict(value = "posts", allEntries = true)
 	public Long createPost(PostRequestDto postRequestDto, User user) {
+		checkAdmin(user);
 		List<String> base64Images = extractBase64ImagesFromContent(postRequestDto.getContent());
 		String content = postRequestDto.getContent();
 		if (!base64Images.isEmpty()) {
@@ -55,7 +61,7 @@ public class PostService {
 
 			for (String base64Image : base64Images) {
 				MultipartFile file = convertBase64ToMultipartFile(base64Image);
-				String uploadedImageUrl = fileService.upload(file, "images/", post);
+				String uploadedImageUrl = fileService.upload(file, "images/", post, TypeEnum.IMAGE);
 				base64ToUrlMap.put(base64Image, uploadedImageUrl);
 			}
 
@@ -87,17 +93,61 @@ public class PostService {
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
 	}
 
-	public void uploadPostFile(MultipartFile file,Long postId,Long userId) {
+	public void uploadPostFile(MultipartFile file,Long postId,User user) {
+		checkAdmin(user);
 		Post post = postRepository.getPostById(postId)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
 		if(file.isEmpty()){
 			throw new S3Exception("파일이 유효하지 않습니다.");
 		}
-		fileService.upload(file, "files/", post);
+		fileService.upload(file, "files/", post,TypeEnum.FILE);
 	}
 
 	public void incrementViewCount(Long id) {
 		postRepository.updatePostViewCount(id);
+	}
+
+	public void updatePost(PostUpdateRequestDto postRequestDto,Long postId,User user) {
+		checkAdmin(user);
+		Post post = postRepository.getPostById(postId)
+			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
+		List<String> base64Images = extractBase64ImagesFromContent(postRequestDto.getContent());
+		String content = postRequestDto.getContent();
+		if (!base64Images.isEmpty()) {
+			postRequestDto.setContent("");
+		}
+		if (!base64Images.isEmpty()) {
+			Map<String, String> base64ToUrlMap = new HashMap<>();
+			for (String base64Image : base64Images) {
+				MultipartFile file = convertBase64ToMultipartFile(base64Image);
+				String uploadedImageUrl = fileService.upload(file, "images/", post,TypeEnum.IMAGE);
+				base64ToUrlMap.put(base64Image, uploadedImageUrl);
+			}
+			String updatedContent = updateContentWithImageUrls(content,
+				base64ToUrlMap);
+			postRequestDto.setContent(updatedContent);
+		}
+		fileService.removeImage(postId);
+		postRepository.updatePost(postRequestDto);
+	}
+
+	public void updatePostFile(MultipartFile file,Long postId,User user){
+		checkAdmin(user);
+		Post post = postRepository.getPostById(postId)
+			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
+		if(file.isEmpty()){
+			throw new S3Exception("파일이 유효하지 않습니다.");
+		}
+		fileService.removeS3File(postId);
+		fileService.upload(file, "files/", post,TypeEnum.FILE);
+	}
+
+	public void deletePost(Long postId,User user) {
+		checkAdmin(user);
+		postRepository.getPostById(postId)
+			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
+		postRepository.deletePost(postId);
+		fileService.deleteS3File(postId);
 	}
 
 	private List<String> extractBase64ImagesFromContent(String content) {
@@ -134,6 +184,15 @@ public class PostService {
 			return new CustomMultipartFile(imageBytes, filename);
 		} catch (Exception e) {
 			throw new Base64ConversionException("Base64를 MultipartFile로 변환하는 중 오류 발생했습니다.");
+		}
+	}
+
+	private void checkAdmin(User user) {
+		if(user.getRole()==null){
+			throw new UserNotFoundException("잘못된 접근 입니다.");
+		}
+		if(user.getRole()!= RoleEnum.ADMIN){
+			throw new RoleNotAllowedException("해당 기능을 위한 접근 권한이 없습니다.");
 		}
 	}
 }

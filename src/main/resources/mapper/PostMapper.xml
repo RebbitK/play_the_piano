@@ -15,7 +15,7 @@
                   '') AS thumbnailUrl,
            created_at as createdAt
     FROM post
-    WHERE category = #{category}
+    WHERE category = #{category} and deleted = 'UNDELETE'
     ORDER BY created_at DESC
     LIMIT #{offset}, #{limit}
   </select>
@@ -23,13 +23,13 @@
   <select id="getTotalPostsCountByCategory" parameterType="string" resultType="int">
     SELECT COUNT(*)
     FROM post
-    WHERE category = #{category}
+    WHERE category = #{category} and deleted = 'UNDELETE'
   </select>
 
   <select id="getPostById" parameterType="Long" resultType="com.example.play_the_piano.post.entity.Post">
     SELECT *
     FROM post
-    WHERE id = #{id}
+    WHERE id = #{id} and deleted = 'UNDELETE'
   </select>
 
   <select id="getPostDtoById" parameterType="Long"
@@ -42,7 +42,7 @@
            post.modified_at as modifiedAt
     FROM post
            JOIN piano.users u on u.id = post.user_id
-    WHERE post.id = #{id}
+    WHERE post.id = #{id} and deleted = 'UNDELETE'
   </select>
 
   <update id="updatePostViewCount" parameterType="Long">
@@ -57,14 +57,21 @@
     WHERE id = #{id}
   </update>
 
-<!--  <update id="updatePost" parameterType="Long">-->
-<!--    UPDATE post-->
-<!--    SET-->
-<!--        title = #{title},-->
-<!--        content = #{content},-->
-<!--        category = #{category}-->
-<!--    WHERE id =#{id}-->
-<!--  </update>-->
+  <update id="deletePost" parameterType="Long">
+    UPDATE post
+    SET deleted = 'DELETE'
+    WHERE id =#{id}
+  </update>
+
+
+  <update id="updatePost" parameterType="com.example.play_the_piano.post.dto.PostUpdateRequestDto">
+    UPDATE post
+    SET
+        title = #{title},
+        content = #{content},
+        category = #{category}
+    WHERE id =#{id} and deleted = 'UNDELETE'
+  </update>
 
 
 </mapper>
