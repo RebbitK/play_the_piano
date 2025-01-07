@@ -18,26 +18,17 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 @EnableCaching
 public class CacheConfig {
-
-	@Bean(name = "cacheObjectMapper")
-	public ObjectMapper objectMapper() {
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
-		return objectMapper;
-	}
-
 	@Bean
 	@Primary
-	public CacheManager userCacheManager(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
+	public CacheManager userCacheManager(RedisConnectionFactory connectionFactory) {
 		RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
 			.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
 				new StringRedisSerializer()))
 			.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
-				new GenericJackson2JsonRedisSerializer(objectMapper)))
-			.entryTtl(Duration.ofMinutes(5L));
+				new GenericJackson2JsonRedisSerializer()))
+			.entryTtl(Duration.ofMinutes(3L));
 
 		return RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(connectionFactory)
-			.cacheDefaults(redisCacheConfiguration)
-			.build();
+			.cacheDefaults(redisCacheConfiguration).build();
 	}
 }
