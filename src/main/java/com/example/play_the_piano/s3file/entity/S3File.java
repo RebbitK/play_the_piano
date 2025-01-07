@@ -1,8 +1,11 @@
 package com.example.play_the_piano.s3file.entity;
 
+import com.example.play_the_piano.global.entity.Deleted;
 import com.example.play_the_piano.global.entity.TimeStamped;
 import com.example.play_the_piano.post.entity.Post;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,9 +30,17 @@ public class S3File extends TimeStamped {
 	@ManyToOne
 	private Post post;
 
-	public S3File(String url, Post port) {
+	@Enumerated(EnumType.STRING)
+	private Deleted deleted;
+
+	@Enumerated(EnumType.STRING)
+	private TypeEnum typeEnum;
+
+	public S3File(String url, Post port,TypeEnum typeEnum) {
 		this.url = url;
 		this.post = port;
+		deleted = Deleted.UNDELETE;
+		this.typeEnum = typeEnum;
 	}
 
 }

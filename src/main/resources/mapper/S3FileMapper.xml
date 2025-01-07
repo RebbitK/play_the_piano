@@ -5,4 +5,22 @@
     INSERT INTO s3file (url,post_id,created_at, modified_at)
     VALUES (#{url},#{post.id} , NOW(), NOW())
   </insert>
+
+  <update id="deleteFile" parameterType="Long">
+    UPDATE s3file
+    SET
+        deleted = 'DELETE'
+    WHERE id=#{id}
+  </update>
+
+  <delete id="removeImage" parameterType="Long">
+    DELETE FROM s3file
+    WHERE id=#{id} and type_enum='IMAGE'
+  </delete>
+
+  <delete id="removeFile" parameterType="Long">
+    DELETE FROM s3file
+    WHERE id=#{id} and type_enum='FILE'
+  </delete>
+
 </mapper>

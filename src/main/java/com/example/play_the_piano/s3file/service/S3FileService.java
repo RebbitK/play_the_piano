@@ -8,6 +8,7 @@ import com.amazonaws.util.IOUtils;
 import com.example.play_the_piano.global.exception.custom.S3Exception;
 import com.example.play_the_piano.post.entity.Post;
 import com.example.play_the_piano.s3file.entity.S3File;
+import com.example.play_the_piano.s3file.entity.TypeEnum;
 import com.example.play_the_piano.s3file.repository.S3FileRepository;
 import jakarta.transaction.Transactional;
 import java.io.ByteArrayInputStream;
@@ -35,12 +36,12 @@ public class S3FileService {
 
 	public final S3FileRepository fileRepository;
 
-	public String upload(MultipartFile file,String path, Post post) {
+	public String upload(MultipartFile file,String path, Post post, TypeEnum typeEnum) {
 		if (file.isEmpty() || Objects.isNull(file.getOriginalFilename())) {
 			throw new S3Exception("유효하지 않은 파일 입니다.");
 		}
 		String fileUrl = this.uploadS3(file,path);
-		fileRepository.createS3File(new S3File(fileUrl,post));
+		fileRepository.createS3File(new S3File(fileUrl,post,typeEnum));
 		return fileUrl;
 	}
 
@@ -81,5 +82,16 @@ public class S3FileService {
 		return amazonS3.getUrl(bucketName, s3Name).toString();
 	}
 
+	public void removeImage(Long id){
+		fileRepository.removeImage(id);
+	}
+
+	public void removeS3File(Long id){
+		fileRepository.removeFile(id);
+	}
+
+	public void deleteS3File(Long id){
+		fileRepository.deleteFile(id);
+	}
 
 }
