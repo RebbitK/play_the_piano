@@ -2,9 +2,9 @@ package com.example.play_the_piano.global.entity;
 
 public enum Deleted {
 
-	DELETE(Authority.DELETE),
+	DELETE(Deleted.Authority.DELETE),
 
-	UNDELETE(Authority.UNDELETE);
+	UNDELETE(Deleted.Authority.UNDELETE);
 
 	private final String authority;
 

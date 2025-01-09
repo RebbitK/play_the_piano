@@ -4,8 +4,8 @@
 <mapper namespace="com.example.play_the_piano.post.repository.PostRepository">
 
   <insert id="createPost" useGeneratedKeys="true" keyProperty="id" >
-    INSERT INTO post (category, content, title, user_id, view_count, created_at, modified_at)
-    VALUES (#{category}, #{content}, #{title}, #{user.id}, 0, NOW(), NOW())
+    INSERT INTO post (category, content, title, user_id, view_count, created_at, modified_at,deleted)
+    VALUES (#{category}, #{content}, #{title}, #{user.id}, 0, NOW(), NOW(),#{deleted})
   </insert>
 
   <select id="getPostsByCategory" parameterType="map"
@@ -43,6 +43,12 @@
     FROM post
            JOIN piano.users u on u.id = post.user_id
     WHERE post.id = #{id} and deleted = 'UNDELETE'
+  </select>
+
+  <select id="getViewCount" parameterType="Long" resultType="Long">
+    SELECT view_count
+    FROM post
+    WHERE id = #{id} and deleted = 'UNDELETE'
   </select>
 
   <update id="updatePostViewCount" parameterType="Long">

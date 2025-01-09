@@ -6,6 +6,12 @@
     VALUES (#{url},#{post.id} , NOW(), NOW())
   </insert>
 
+  <select id="getPostFile" parameterType="Long" resultType="String">
+    SELECT url
+    FROM s3file
+    WHERE id=#{id} and deleted='UNDELETE'
+  </select>
+
   <update id="deleteFile" parameterType="Long">
     UPDATE s3file
     SET
@@ -13,14 +19,31 @@
     WHERE id=#{id}
   </update>
 
+  <select id="getPostFileByPostId" parameterType="Long" resultType="String">
+    SELECT url
+    FROM s3file
+    WHERE s3file.post_id = #{id}
+      and type_enum = 'FILE'
+      and deleted = 'UNDELETE'
+  </select>
+
+  <select id="getPostImageByPostId" parameterType="Long" resultType="String">
+    SELECT url
+    FROM s3file
+    WHERE s3file.post_id = #{id}
+      and type_enum = 'IMAGE'
+      and deleted = 'UNDELETE'
+  </select>
+
+
   <delete id="removeImage" parameterType="Long">
     DELETE FROM s3file
-    WHERE id=#{id} and type_enum='IMAGE'
+    WHERE s3file.post_id=#{id} and type_enum='IMAGE' and deleted='UNDELETE'
   </delete>
 
   <delete id="removeFile" parameterType="Long">
     DELETE FROM s3file
-    WHERE id=#{id} and type_enum='FILE'
+    WHERE s3file.post_id=#{id} and type_enum='FILE' and deleted='UNDELETE'
   </delete>
 
 </mapper>

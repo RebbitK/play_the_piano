@@ -16,15 +16,15 @@ import lombok.Setter;
 @AllArgsConstructor
 public class GetPostsResponseDto {
 
-	private List<String> thumbnails;
+	private String thumbnails;
 
-	private List<String> titles;
+	private String titles;
 
 	private int totalPosts;
 
 	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	@JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm")
-	private List<LocalDateTime> createdAts;
+	private LocalDateTime createdAts;
 
 }

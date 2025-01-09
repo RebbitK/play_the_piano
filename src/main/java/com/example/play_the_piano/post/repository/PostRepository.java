@@ -22,6 +22,8 @@ public interface PostRepository {
 
 	Optional<Post> getPostById(Long id);
 
+	Optional<Long> getViewCount(Long id);
+
 	void updatePostViewCount(Long id);
 
 	void updateContent(@Param("id") Long id, @Param("content") String content);

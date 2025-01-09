@@ -8,6 +8,7 @@ import com.example.play_the_piano.post.dto.PostUpdateRequestDto;
 import com.example.play_the_piano.post.entity.PostEnum;
 import com.example.play_the_piano.post.service.PostService;
 import com.example.play_the_piano.user.entity.UserDetailsImpl;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -55,13 +56,13 @@ public class PostController {
 	}
 
 	@GetMapping
-	public ResponseEntity<CommonResponse<GetPostsResponseDto>> getPosts(
+	public ResponseEntity<CommonResponse<List<GetPostsResponseDto>>> getPosts(
 		@RequestParam(name = "category") PostEnum category,
 		@RequestParam(name = "page", defaultValue = "1") int page,
 		@RequestParam(name = "size", defaultValue = "10") int size) {
-		GetPostsResponseDto responseDto = postService.getPosts(category, page, size);
+		List<GetPostsResponseDto> responseDto = postService.getPosts(category, page, size);
 		return ResponseEntity.status(HttpStatus.OK.value())
-			.body(CommonResponse.<GetPostsResponseDto>builder()
+			.body(CommonResponse.<List<GetPostsResponseDto>>builder()
 				.msg("view Posts successful")
 				.data(responseDto)
 				.build());
@@ -74,6 +75,26 @@ public class PostController {
 			.body(CommonResponse.<GetPostResponseDto>builder()
 				.msg("view Post successful")
 				.data(responseDto)
+				.build());
+	}
+
+	@GetMapping("/viewCount/{id}")
+	public ResponseEntity<CommonResponse<Long>> getViewCount(@PathVariable Long id) {
+		Long viewCount = postService.getViewCont(id);
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Long>builder()
+				.msg("view ViewCount successful")
+				.data(viewCount)
+				.build());
+	}
+
+	@GetMapping("/files/{id}")
+	public ResponseEntity<CommonResponse<String>> getPostFile(@PathVariable Long id) {
+		String file = postService.getPostFile(id);
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<String>builder()
+				.msg("view PostFile successful")
+				.data(file)
 				.build());
 	}
 
@@ -91,7 +112,7 @@ public class PostController {
 	public ResponseEntity<CommonResponse<Void>> updatePostFile(
 		@RequestParam("file") MultipartFile file,
 		@RequestParam("postId") Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-		postService.uploadPostFile(file, postId, userDetails.getUser());
+		postService.updatePostFile(file, postId, userDetails.getUser());
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<Void>builder()
 				.msg("update PostFile successful")

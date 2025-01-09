@@ -19,7 +19,6 @@ import com.example.play_the_piano.s3file.entity.TypeEnum;
 import com.example.play_the_piano.s3file.service.S3FileService;
 import com.example.play_the_piano.user.entity.RoleEnum;
 import com.example.play_the_piano.user.entity.User;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +33,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -74,17 +74,20 @@ public class PostService {
 	}
 
 	@Cacheable(value = "posts", key = "#category.name() + '_' + #page + '_' + #size", condition = "#size > 0")
-	public GetPostsResponseDto getPosts(PostEnum category, int page, int size) {
+	public List<GetPostsResponseDto> getPosts(PostEnum category, int page, int size) {
 		int offset = (page - 1) * size;
 		int totalPage = postRepository.getTotalPostsCountByCategory(category.name()) / size + 1;
 		List<PostThumbnailDto> posts = postRepository.getPostsByCategory(category.name(), offset,
 			size);
-		List<String> titles = posts.stream().map(PostThumbnailDto::getTitle).toList();
-		List<String> thumbnails = posts.stream().map(PostThumbnailDto::getThumbnailUrl).toList();
-		List<LocalDateTime> createdAts = posts.stream().map(PostThumbnailDto::getCreatedAt)
+		return posts.stream()
+			.map(post -> new GetPostsResponseDto(
+				post.getThumbnailUrl(),
+				post.getTitle(),
+				totalPage,
+				post.getCreatedAt()
+			))
 			.toList();
 
-		return new GetPostsResponseDto(thumbnails, titles, totalPage, createdAts);
 	}
 
 	@Cacheable(value = "post", key = "#id")
@@ -93,21 +96,37 @@ public class PostService {
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
 	}
 
-	public void uploadPostFile(MultipartFile file,Long postId,User user) {
+	public Long getViewCont(Long id) {
+		return postRepository.getViewCount(id)
+			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
+	}
+
+	@Transactional
+	public void uploadPostFile(MultipartFile file, Long postId, User user) {
 		checkAdmin(user);
 		Post post = postRepository.getPostById(postId)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
-		if(file.isEmpty()){
+		if (file.isEmpty()) {
 			throw new S3Exception("파일이 유효하지 않습니다.");
 		}
-		fileService.upload(file, "files/", post,TypeEnum.FILE);
+		fileService.upload(file, "files/", post, TypeEnum.FILE);
 	}
 
+	@Cacheable(value = "postFile", key = "#id")
+	public String getPostFile(Long id) {
+		postRepository.getPostById(id)
+			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
+		return fileService.getPostFile(id);
+	}
+
+	@Transactional
 	public void incrementViewCount(Long id) {
 		postRepository.updatePostViewCount(id);
 	}
 
-	public void updatePost(PostUpdateRequestDto postRequestDto,Long postId,User user) {
+	@Transactional
+	@CacheEvict(value = {"posts", "post"}, allEntries = true)
+	public void updatePost(PostUpdateRequestDto postRequestDto, Long postId, User user) {
 		checkAdmin(user);
 		Post post = postRepository.getPostById(postId)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
@@ -120,7 +139,7 @@ public class PostService {
 			Map<String, String> base64ToUrlMap = new HashMap<>();
 			for (String base64Image : base64Images) {
 				MultipartFile file = convertBase64ToMultipartFile(base64Image);
-				String uploadedImageUrl = fileService.upload(file, "images/", post,TypeEnum.IMAGE);
+				String uploadedImageUrl = fileService.upload(file, "images/", post, TypeEnum.IMAGE);
 				base64ToUrlMap.put(base64Image, uploadedImageUrl);
 			}
 			String updatedContent = updateContentWithImageUrls(content,
@@ -131,18 +150,22 @@ public class PostService {
 		postRepository.updatePost(postRequestDto);
 	}
 
-	public void updatePostFile(MultipartFile file,Long postId,User user){
+	@Transactional
+	@CacheEvict(value = "postFile", key = "#id", allEntries = true)
+	public void updatePostFile(MultipartFile file, Long id, User user) {
 		checkAdmin(user);
-		Post post = postRepository.getPostById(postId)
+		Post post = postRepository.getPostById(id)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
-		if(file.isEmpty()){
+		if (file.isEmpty()) {
 			throw new S3Exception("파일이 유효하지 않습니다.");
 		}
-		fileService.removeS3File(postId);
-		fileService.upload(file, "files/", post,TypeEnum.FILE);
+		fileService.removeS3File(id);
+		fileService.upload(file, "files/", post, TypeEnum.FILE);
 	}
 
-	public void deletePost(Long postId,User user) {
+	@Transactional
+	@CacheEvict(value = "posts", allEntries = true)
+	public void deletePost(Long postId, User user) {
 		checkAdmin(user);
 		postRepository.getPostById(postId)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
@@ -188,10 +211,10 @@ public class PostService {
 	}
 
 	private void checkAdmin(User user) {
-		if(user.getRole()==null){
+		if (user.getRole() == null) {
 			throw new UserNotFoundException("잘못된 접근 입니다.");
 		}
-		if(user.getRole()!= RoleEnum.ADMIN){
+		if (user.getRole() != RoleEnum.ADMIN) {
 			throw new RoleNotAllowedException("해당 기능을 위한 접근 권한이 없습니다.");
 		}
 	}

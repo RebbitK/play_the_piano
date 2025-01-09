@@ -82,11 +82,23 @@ public class S3FileService {
 		return amazonS3.getUrl(bucketName, s3Name).toString();
 	}
 
+	public String getPostFile(Long id){
+		return fileRepository.getPostFile(id);
+	}
+
 	public void removeImage(Long id){
+		String url = fileRepository.getPostImageByPostId(id);
+		if(url != null){
+			amazonS3.deleteObject(bucketName,url);
+		}
 		fileRepository.removeImage(id);
 	}
 
 	public void removeS3File(Long id){
+		String url = fileRepository.getPostFileByPostId(id);
+		if(url != null){
+			amazonS3.deleteObject(bucketName,url);
+		}
 		fileRepository.removeFile(id);
 	}
 
