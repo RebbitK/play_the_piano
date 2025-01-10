@@ -11,11 +11,16 @@
   <select id="getPostsByCategory" parameterType="map"
     resultType="com.example.play_the_piano.post.dto.PostThumbnailDto">
     SELECT title,
-           IFNULL(SUBSTRING_INDEX(SUBSTRING_INDEX(content, 'src="', -1), '"', 1),
-                  '') AS thumbnailUrl,
+           IFNULL(
+             IF(content LIKE '%img src%',
+                SUBSTRING_INDEX(SUBSTRING_INDEX(content, 'src="', -1), '"', 1), ''),
+             ''
+           )          AS thumbnailUrl,
+           id,
            created_at as createdAt
     FROM post
-    WHERE category = #{category} and deleted = 'UNDELETE'
+    WHERE category = #{category}
+      and deleted = 'UNDELETE'
     ORDER BY created_at DESC
     LIMIT #{offset}, #{limit}
   </select>
