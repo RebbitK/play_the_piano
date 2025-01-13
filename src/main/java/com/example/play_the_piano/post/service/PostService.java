@@ -1,5 +1,6 @@
 package com.example.play_the_piano.post.service;
 
+import com.example.play_the_piano.global.entity.ListWrapper;
 import com.example.play_the_piano.global.exception.custom.Base64ConversionException;
 import com.example.play_the_piano.global.exception.custom.InvalidBase64ExceptionException;
 import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
@@ -74,19 +75,21 @@ public class PostService {
 	}
 
 	@Cacheable(value = "posts", key = "#category.name() + '_' + #page + '_' + #size", condition = "#size > 0")
-	public List<GetPostsResponseDto> getPosts(PostEnum category, int page, int size) {
+	public ListWrapper<GetPostsResponseDto> getPosts(PostEnum category, int page, int size) {
 		int offset = (page - 1) * size;
 		int totalPage = postRepository.getTotalPostsCountByCategory(category.name()) / size + 1;
 		List<PostThumbnailDto> posts = postRepository.getPostsByCategory(category.name(), offset,
 			size);
-		return posts.stream()
+		List<GetPostsResponseDto> responseDto = posts.stream()
 			.map(post -> new GetPostsResponseDto(
 				post.getThumbnailUrl(),
 				post.getTitle(),
+				post.getId(),
 				totalPage,
 				post.getCreatedAt()
 			))
 			.toList();
+		return new ListWrapper<GetPostsResponseDto>(responseDto);
 
 	}
 

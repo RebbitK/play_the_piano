@@ -55,12 +55,12 @@ public class PostController {
 				.build());
 	}
 
-	@GetMapping
+	@GetMapping("/get")
 	public ResponseEntity<CommonResponse<List<GetPostsResponseDto>>> getPosts(
 		@RequestParam(name = "category") PostEnum category,
 		@RequestParam(name = "page", defaultValue = "1") int page,
 		@RequestParam(name = "size", defaultValue = "10") int size) {
-		List<GetPostsResponseDto> responseDto = postService.getPosts(category, page, size);
+		List<GetPostsResponseDto> responseDto = postService.getPosts(category, page, size).getTList();
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<List<GetPostsResponseDto>>builder()
 				.msg("view Posts successful")
@@ -68,7 +68,7 @@ public class PostController {
 				.build());
 	}
 
-	@GetMapping("/{id}")
+	@GetMapping("/get/{id}")
 	public ResponseEntity<CommonResponse<GetPostResponseDto>> getPost(@PathVariable Long id) {
 		GetPostResponseDto responseDto = postService.getPost(id);
 		return ResponseEntity.status(HttpStatus.OK.value())

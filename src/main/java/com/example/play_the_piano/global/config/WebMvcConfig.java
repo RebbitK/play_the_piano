@@ -25,7 +25,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 			.exposedHeaders("Authorization","Refresh-Token")
 			.allowedOriginPatterns(allowedOrigins)
 			.allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-			.allowedHeaders("Authorization", "Content-Type")
+			.allowedHeaders("*")
 			.allowCredentials(true)
 			.maxAge(MAX_AGE_SECS);
 	}
