@@ -4,8 +4,8 @@
 <mapper namespace="com.example.play_the_piano.post.repository.PostRepository">
 
   <insert id="createPost" useGeneratedKeys="true" keyProperty="id" >
-    INSERT INTO post (category, content, title, user_id, view_count, created_at, modified_at,deleted)
-    VALUES (#{category}, #{content}, #{title}, #{user.id}, 0, NOW(), NOW(),#{deleted})
+    INSERT INTO post (category, content, title, deleted,user_id, view_count, created_at, modified_at,deleted)
+    VALUES (#{category}, #{content}, #{title},#{deleted}, #{user.id}, 0, NOW(), NOW(),#{deleted})
   </insert>
 
   <select id="getPostsByCategory" parameterType="map"

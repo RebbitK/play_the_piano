@@ -20,7 +20,6 @@ import com.example.play_the_piano.s3file.entity.TypeEnum;
 import com.example.play_the_piano.s3file.service.S3FileService;
 import com.example.play_the_piano.user.entity.RoleEnum;
 import com.example.play_the_piano.user.entity.User;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +49,7 @@ public class PostService {
 	@CacheEvict(value = "posts", allEntries = true)
 	public Long createPost(PostRequestDto postRequestDto, User user) {
 		checkAdmin(user);
-		List<String> base64Images = extractBase64ImagesFromContent(postRequestDto.getContent());
+		List<String> base64Images = fileService.extractBase64ImagesFromContent(postRequestDto.getContent());
 		String content = postRequestDto.getContent();
 		if (!base64Images.isEmpty()) {
 			postRequestDto.setContent("");
@@ -61,12 +60,12 @@ public class PostService {
 			Map<String, String> base64ToUrlMap = new HashMap<>();
 
 			for (String base64Image : base64Images) {
-				MultipartFile file = convertBase64ToMultipartFile(base64Image);
-				String uploadedImageUrl = fileService.upload(file, "images/", post, TypeEnum.IMAGE);
+				MultipartFile file = fileService.convertBase64ToMultipartFile(base64Image);
+				String uploadedImageUrl = fileService.uploadPostFile(file, "images/", post, TypeEnum.IMAGE);
 				base64ToUrlMap.put(base64Image, uploadedImageUrl);
 			}
 
-			String updatedContent = updateContentWithImageUrls(content,
+			String updatedContent = fileService.updateContentWithImageUrls(content,
 				base64ToUrlMap);
 			post.updateContent(updatedContent);
 			postRepository.updateContent(post.getId(), post.getContent());
@@ -112,7 +111,7 @@ public class PostService {
 		if (file.isEmpty()) {
 			throw new S3Exception("파일이 유효하지 않습니다.");
 		}
-		fileService.upload(file, "files/", post, TypeEnum.FILE);
+		fileService.uploadPostFile(file, "files/", post, TypeEnum.FILE);
 	}
 
 	@Cacheable(value = "postFile", key = "#id")
@@ -133,7 +132,7 @@ public class PostService {
 		checkAdmin(user);
 		Post post = postRepository.getPostById(postId)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
-		List<String> base64Images = extractBase64ImagesFromContent(postRequestDto.getContent());
+		List<String> base64Images = fileService.extractBase64ImagesFromContent(postRequestDto.getContent());
 		String content = postRequestDto.getContent();
 		if (!base64Images.isEmpty()) {
 			postRequestDto.setContent("");
@@ -141,11 +140,11 @@ public class PostService {
 		if (!base64Images.isEmpty()) {
 			Map<String, String> base64ToUrlMap = new HashMap<>();
 			for (String base64Image : base64Images) {
-				MultipartFile file = convertBase64ToMultipartFile(base64Image);
-				String uploadedImageUrl = fileService.upload(file, "images/", post, TypeEnum.IMAGE);
+				MultipartFile file = fileService.convertBase64ToMultipartFile(base64Image);
+				String uploadedImageUrl = fileService.uploadPostFile(file, "images/", post, TypeEnum.IMAGE);
 				base64ToUrlMap.put(base64Image, uploadedImageUrl);
 			}
-			String updatedContent = updateContentWithImageUrls(content,
+			String updatedContent = fileService.updateContentWithImageUrls(content,
 				base64ToUrlMap);
 			postRequestDto.setContent(updatedContent);
 		}
@@ -163,7 +162,7 @@ public class PostService {
 			throw new S3Exception("파일이 유효하지 않습니다.");
 		}
 		fileService.removeS3File(id);
-		fileService.upload(file, "files/", post, TypeEnum.FILE);
+		fileService.uploadPostFile(file, "files/", post, TypeEnum.FILE);
 	}
 
 	@Transactional
@@ -174,43 +173,6 @@ public class PostService {
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
 		postRepository.deletePost(postId);
 		fileService.deleteS3File(postId);
-	}
-
-	private List<String> extractBase64ImagesFromContent(String content) {
-		String regex = "data:image/(png|jpeg|gif|bmp|svg\\+xml);base64,([A-Za-z0-9+/=]+)";
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(content);
-
-		List<String> base64Images = new ArrayList<>();
-		while (matcher.find()) {
-			base64Images.add(matcher.group(0));
-		}
-		return base64Images;
-	}
-
-	private String updateContentWithImageUrls(String content, Map<String, String> base64ToUrlMap) {
-		for (Map.Entry<String, String> entry : base64ToUrlMap.entrySet()) {
-			content = content.replace(entry.getKey(), entry.getValue());
-		}
-		return content;
-	}
-
-	private MultipartFile convertBase64ToMultipartFile(String base64Image) {
-		String[] parts = base64Image.split(",");
-		if (parts.length != 2) {
-			throw new InvalidBase64ExceptionException("잘못된 Base64 문자열입니다.");
-		}
-		String base64Data = parts[1];
-		String metadata = parts[0];
-		String extension = metadata.split(";")[0].split("/")[1];
-		byte[] imageBytes = Base64.decodeBase64(base64Data);
-
-		try {
-			String filename = UUID.randomUUID().toString() + "." + extension;
-			return new CustomMultipartFile(imageBytes, filename);
-		} catch (Exception e) {
-			throw new Base64ConversionException("Base64를 MultipartFile로 변환하는 중 오류 발생했습니다.");
-		}
 	}
 
 	private void checkAdmin(User user) {

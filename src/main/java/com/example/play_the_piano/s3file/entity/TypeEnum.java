@@ -1,10 +1,9 @@
 package com.example.play_the_piano.s3file.entity;
 
-import com.example.play_the_piano.post.entity.PostEnum;
-
 public enum TypeEnum {
 	IMAGE(Authority.IMAGE),
-	FILE(Authority.FILE),;
+	FILE(Authority.FILE),
+	;
 	private final String authority;
 
 	TypeEnum(String authority) {

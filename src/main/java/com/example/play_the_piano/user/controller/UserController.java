@@ -147,17 +147,4 @@ public class UserController {
 				.data(check)
 				.build());
 	}
-
-	@PostMapping("/token")
-	public ResponseEntity<CommonResponse<Void>> updateToken(HttpServletRequest request,HttpServletResponse response){
-		String tokenValue = jwtUtil.resolveToken(request);
-		String token = jwtUtil.validateRefreshToken(
-			jwtUtil.getMemberInfoFromExpiredToken(tokenValue).get("userId",
-				Long.class));
-		response.setHeader(JwtUtil.AUTHORIZATION_HEADER, token);
-		return ResponseEntity.status(HttpStatus.OK.value())
-			.body(CommonResponse.<Void>builder()
-				.msg("update token successful")
-				.build());
-	}
 }
