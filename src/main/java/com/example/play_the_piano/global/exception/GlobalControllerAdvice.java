@@ -8,6 +8,7 @@ import com.example.play_the_piano.global.exception.custom.InvalidBase64Exception
 import com.example.play_the_piano.global.exception.custom.InvalidPositionException;
 import com.example.play_the_piano.global.exception.custom.PasswordUpdateFailedException;
 import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
+import com.example.play_the_piano.global.exception.custom.QuizNotFoundException;
 import com.example.play_the_piano.global.exception.custom.RoleNotAllowedException;
 import com.example.play_the_piano.global.exception.custom.S3Exception;
 import com.example.play_the_piano.global.exception.custom.SendEmailException;
@@ -53,7 +54,7 @@ public class GlobalControllerAdvice {
 		return createResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
 	}
 
-	@ExceptionHandler({PostNotFoundException.class})
+	@ExceptionHandler({PostNotFoundException.class, QuizNotFoundException.class})
 	public ResponseEntity<CommonResponse<ErrorResponse>> handlePostNotFoundException(Exception ex,
 		HttpServletRequest request) {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",

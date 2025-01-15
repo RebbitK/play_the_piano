@@ -1,9 +1,9 @@
-package com.example.play_the_piano.s3file.entity;
+package com.example.play_the_piano.quiz.entity;
 
 import com.example.play_the_piano.global.entity.Deleted;
 import com.example.play_the_piano.global.entity.TimeStamped;
-import com.example.play_the_piano.post.entity.Post;
-import com.example.play_the_piano.quiz.entity.Quiz;
+import com.example.play_the_piano.quiz.dto.QuizRequestDto;
+import com.example.play_the_piano.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,38 +21,37 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class S3File extends TimeStamped {
+public class Quiz extends TimeStamped {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private String url;
+	private String title;
 
-	@ManyToOne(fetch = FetchType.LAZY,optional = true)
-	private Post post;
+	private String content;
 
-	@ManyToOne(fetch = FetchType.LAZY,optional = true)
-	private Quiz quiz;
+	private String answer;
 
 	@Enumerated(EnumType.STRING)
 	private Deleted deleted;
 
 	@Enumerated(EnumType.STRING)
-	private TypeEnum typeEnum;
+	private QuizEnum quizEnum;
 
-	public S3File(String url, Post port,TypeEnum typeEnum) {
-		this.url = url;
-		this.post = port;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private User user;
+
+	public Quiz(QuizRequestDto requestDto, User user) {
+		this.title = requestDto.getTitle();
+		this.content = requestDto.getContent();
+		this.answer = requestDto.getAnswer();
+		this.quizEnum = requestDto.getQuizEnum();
+		this.user = user;
 		deleted = Deleted.UNDELETE;
-		this.typeEnum = typeEnum;
 	}
 
-	public S3File(String url, Quiz quiz,TypeEnum typeEnum) {
-		this.url = url;
-		this.quiz = quiz;
-		deleted = Deleted.UNDELETE;
-		this.typeEnum = typeEnum;
+	public void updateContent(String content) {
+		this.content = content;
 	}
-
 }
