@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.play_the_piano.quiz.repository.QuizRepository">
+
+  <insert id="createQuiz" useGeneratedKeys="true" keyProperty="id"  >
+    INSERT INTO quiz (title,content,user_id, deleted,quiz_enum, created_at, modified_at)
+    VALUES (#{title}, #{content}, #{user.id},#{deleted},#{quiz_enum}, NOW(), NOW())
+  </insert>
+
+  <update id="updateContent">
+    UPDATE quiz
+    SET content = #{content}
+    WHERE id = #{id}
+  </update>
+  
+  <select id="getQuizzesByQuizEnum" parameterType="map" resultType="com.example.play_the_piano.quiz.dto.QuizzesResponseDto">
+    SELECT id,title,quiz_enum
+    FROM quiz
+    WHERE deleted = 'UNDELETE' and quiz_enum = #{quizEnum}
+    ORDER BY created_at DESC
+    LIMIT #{offset}, #{limit}
+  </select>
+
+  <select id="getQuizById" parameterType="Long" resultType="com.example.play_the_piano.quiz.dto.QuizResponseDto">
+    SELECT id,title,content,answer,quiz_enum
+    FROM quiz
+    WHERE deleted = 'UNDELETE' and id = #{id}
+  </select>
+
+  <select id="getTotalQuizzesCountByQuizEnum" parameterType="string" resultType="int">
+    SELECT COUNT(*)
+    FROM quiz
+    WHERE quiz_enum = #{quizEnum} and deleted = 'UNDELETE'
+  </select>
+
+</mapper>
