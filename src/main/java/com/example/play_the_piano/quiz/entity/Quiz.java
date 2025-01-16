@@ -37,7 +37,7 @@ public class Quiz extends TimeStamped {
 	private Deleted deleted;
 
 	@Enumerated(EnumType.STRING)
-	private QuizEnum quizEnum;
+	private QuizLevel quizLevel;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
@@ -46,7 +46,7 @@ public class Quiz extends TimeStamped {
 		this.title = requestDto.getTitle();
 		this.content = requestDto.getContent();
 		this.answer = requestDto.getAnswer();
-		this.quizEnum = requestDto.getQuizEnum();
+		this.quizLevel = requestDto.getQuizLevel();
 		this.user = user;
 		deleted = Deleted.UNDELETE;
 	}

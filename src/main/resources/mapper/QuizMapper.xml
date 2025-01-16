@@ -4,8 +4,8 @@
 <mapper namespace="com.example.play_the_piano.quiz.repository.QuizRepository">
 
   <insert id="createQuiz" useGeneratedKeys="true" keyProperty="id"  >
-    INSERT INTO quiz (title,content,user_id, deleted,quiz_enum, created_at, modified_at)
-    VALUES (#{title}, #{content}, #{user.id},#{deleted},#{quiz_enum}, NOW(), NOW())
+    INSERT INTO quiz (title,content,user_id, deleted,quiz_level,answer, created_at, modified_at)
+    VALUES (#{title}, #{content}, #{user.id},#{deleted},#{quizLevel},#{answer}, NOW(), NOW())
   </insert>
 
   <update id="updateContent">
@@ -15,15 +15,15 @@
   </update>
   
   <select id="getQuizzesByQuizEnum" parameterType="map" resultType="com.example.play_the_piano.quiz.dto.QuizzesResponseDto">
-    SELECT id,title,quiz_enum
+    SELECT id,title,quiz_level
     FROM quiz
-    WHERE deleted = 'UNDELETE' and quiz_enum = #{quizEnum}
+    WHERE deleted = 'UNDELETE' and quiz_level = #{quizLevel}
     ORDER BY created_at DESC
     LIMIT #{offset}, #{limit}
   </select>
 
   <select id="getQuizById" parameterType="Long" resultType="com.example.play_the_piano.quiz.dto.QuizResponseDto">
-    SELECT id,title,content,answer,quiz_enum
+    SELECT id,title,content,answer,quiz_level
     FROM quiz
     WHERE deleted = 'UNDELETE' and id = #{id}
   </select>
@@ -31,7 +31,26 @@
   <select id="getTotalQuizzesCountByQuizEnum" parameterType="string" resultType="int">
     SELECT COUNT(*)
     FROM quiz
-    WHERE quiz_enum = #{quizEnum} and deleted = 'UNDELETE'
+    WHERE quiz_level = #{quizLevel} and deleted = 'UNDELETE'
   </select>
+
+  <select id="loadQuizzesByQuizEnum" parameterType="String" resultType="com.example.play_the_piano.quiz.dto.LoadQuizResponseDto">
+    SELECT id,title,content,quiz_level
+    FROM quiz
+    WHERE quiz_level = #{quizLevel} and deleted = 'UNDELETE'
+  </select>
+
+  <select id="checkAnswers" parameterType="java.util.List" resultType="com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto">
+    <foreach item="item" index="index" collection="list" open="" separator=" UNION " close="">
+      SELECT
+      #{item.id} AS id,
+      q.answer AS correctAnswer,
+      IF(q.answer = #{item.answer}, true, false) AS isCorrect
+      FROM quiz q
+      WHERE q.id = #{item.id}
+    </foreach>
+  </select>
+
+
 
 </mapper>

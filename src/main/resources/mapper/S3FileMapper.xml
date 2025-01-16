@@ -1,49 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.play_the_piano.s3file.repository.S3FileRepository">
+
   <insert id="createS3File" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO s3file (url,post_id,deleted,quiz_id,created_at, modified_at)
-    VALUES (#{url},#{post.id} ,#{deleted}, #{quiz_id},NOW(), NOW())
+    INSERT INTO s3file (url,deleted,type_enum,created_at, modified_at)
+    VALUES (#{url},#{deleted},#{typeEnum},NOW(), NOW())
   </insert>
 
-  <select id="getPostFile" parameterType="Long" resultType="String">
-    SELECT url
-    FROM s3file
-    WHERE id=#{id} and deleted='UNDELETE'
+  <insert id="createS3FileRelation" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO s3file_relation (object_id, object_enum, file_id)
+    VALUE (#{objectId},#{objectEnum},#{file.id})
+  </insert>
+  
+  <select id="getFile" parameterType="map" resultType="String">
+    SELECT s.url
+    FROM s3file_relation sr
+    JOIN s3file s on sr.file_id = s.id
+    WHERE s.deleted='UNDELETE' and sr.object_enum = #{objectEnum} and sr.object_id = #{objectId} and s.type_enum = #{typeEnum}
   </select>
 
-  <update id="deleteFile" parameterType="Long">
-    UPDATE s3file
+  <delete id="deleteFile" parameterType="map">
+    DELETE s
+    FROM s3file s
+    JOIN s3file_relation sr ON s.id = sr.file_id
+    WHERE sr.object_enum = #{objectEnum} and sr.object_id = #{objectId} and s.type_enum = #{typeEnum}
+  </delete>
+
+  <update id="deletedFile" parameterType="map">
+    UPDATE s3file s JOIN s3file_relation sr ON s.id = sr.file_id
     SET
         deleted = 'DELETE'
-    WHERE id=#{id}
+    WHERE sr.object_enum = #{objectEnum} and sr.object_id = #{objectId}
   </update>
 
-  <select id="getPostFileByPostId" parameterType="Long" resultType="String">
-    SELECT url
-    FROM s3file
-    WHERE s3file.post_id = #{id}
-      and type_enum = 'FILE'
-      and deleted = 'UNDELETE'
-  </select>
 
-  <select id="getPostImageByPostId" parameterType="Long" resultType="String">
-    SELECT url
-    FROM s3file
-    WHERE s3file.post_id = #{id}
-      and type_enum = 'IMAGE'
-      and deleted = 'UNDELETE'
-  </select>
-
-
-  <delete id="removeImage" parameterType="Long">
-    DELETE FROM s3file
-    WHERE s3file.post_id=#{id} and type_enum='IMAGE' and deleted='UNDELETE'
-  </delete>
-
-  <delete id="removeFile" parameterType="Long">
-    DELETE FROM s3file
-    WHERE s3file.post_id=#{id} and type_enum='FILE' and deleted='UNDELETE'
-  </delete>
 
 </mapper>

@@ -1,6 +1,6 @@
 package com.example.play_the_piano.quiz.dto;
 
-import com.example.play_the_piano.quiz.entity.QuizEnum;
+import com.example.play_the_piano.quiz.entity.QuizLevel;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
@@ -19,6 +19,6 @@ public class QuizzesResponseDto {
 	private String title;
 
 	@Enumerated(EnumType.STRING)
-	private QuizEnum quizEnum;
+	private QuizLevel quizLevel;
 
 }

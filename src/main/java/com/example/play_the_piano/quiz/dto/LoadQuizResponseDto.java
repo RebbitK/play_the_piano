@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class QuizResponseDto {
+public class LoadQuizResponseDto {
 
 	private Long id;
 
@@ -20,8 +20,7 @@ public class QuizResponseDto {
 
 	private String content;
 
-	private String answer;
-
 	@Enumerated(EnumType.STRING)
 	private QuizLevel quizLevel;
+
 }

@@ -1,6 +1,10 @@
 package com.example.play_the_piano.s3file.repository;
 
+import com.example.play_the_piano.s3file.entity.ObjectEnum;
 import com.example.play_the_piano.s3file.entity.S3File;
+import com.example.play_the_piano.s3file.entity.S3FileRelation;
+import com.example.play_the_piano.s3file.entity.TypeEnum;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
@@ -8,15 +12,11 @@ public interface S3FileRepository {
 
 	void createS3File(S3File s3File);
 
-	void removeImage(Long id);
+	void createS3FileRelation(S3FileRelation s3FileRelation);
 
-	void removeFile(Long id);
+	List<String> getFile(ObjectEnum objectEnum, Long objectId, TypeEnum typeEnum);
 
-	void deleteFile(Long id);
+	void deleteFile(ObjectEnum objectEnum, Long objectId, TypeEnum typeEnum);
 
-	String getPostFile(Long id);
-
-	String getPostFileByPostId(Long id);
-
-	String getPostImageByPostId(Long id);
+	void deletedFile(ObjectEnum objectEnum, Long objectId);
 }

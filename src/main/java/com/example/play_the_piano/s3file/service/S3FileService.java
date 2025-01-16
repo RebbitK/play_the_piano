@@ -8,16 +8,17 @@ import com.amazonaws.util.IOUtils;
 import com.example.play_the_piano.global.exception.custom.Base64ConversionException;
 import com.example.play_the_piano.global.exception.custom.InvalidBase64ExceptionException;
 import com.example.play_the_piano.global.exception.custom.S3Exception;
-import com.example.play_the_piano.post.entity.Post;
-import com.example.play_the_piano.quiz.entity.Quiz;
 import com.example.play_the_piano.s3file.customMultipartFile.CustomMultipartFile;
+import com.example.play_the_piano.s3file.entity.ObjectEnum;
 import com.example.play_the_piano.s3file.entity.S3File;
+import com.example.play_the_piano.s3file.entity.S3FileRelation;
 import com.example.play_the_piano.s3file.entity.TypeEnum;
 import com.example.play_the_piano.s3file.repository.S3FileRepository;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,35 +44,30 @@ public class S3FileService {
 
 	public final S3FileRepository fileRepository;
 
-	public String uploadPostFile(MultipartFile file,String path, Post post, TypeEnum typeEnum) {
+	public String upload(MultipartFile file, String path, ObjectEnum objectEnum, Long objectId,
+		TypeEnum typeEnum) {
 		if (file.isEmpty() || Objects.isNull(file.getOriginalFilename())) {
 			throw new S3Exception("유효하지 않은 파일 입니다.");
 		}
-		String fileUrl = this.uploadS3(file,path);
-		fileRepository.createS3File(new S3File(fileUrl,post,typeEnum));
-		return fileUrl;
-	}
-
-	public String uploadQuizFile(MultipartFile file,String path, Quiz quiz, TypeEnum typeEnum) {
-		if (file.isEmpty() || Objects.isNull(file.getOriginalFilename())) {
-			throw new S3Exception("유효하지 않은 파일 입니다.");
-		}
-		String fileUrl = this.uploadS3(file,path);
-		fileRepository.createS3File(new S3File(fileUrl,quiz,typeEnum));
+		String fileUrl = this.uploadS3(file, path);
+		S3File s3File = new S3File(fileUrl, typeEnum);
+		fileRepository.createS3File(s3File);
+		S3FileRelation s3FileRelation = new S3FileRelation(s3File, objectEnum, objectId);
+		fileRepository.createS3FileRelation(s3FileRelation);
 		return fileUrl;
 	}
 
 
-	private String uploadS3(MultipartFile file,String path) {
+	private String uploadS3(MultipartFile file, String path) {
 		try {
-			return this.uploadS3File(file,path);
+			return this.uploadS3File(file, path);
 		} catch (IOException e) {
 			throw new S3Exception("입출력 작업 중 문제가 발생하였습니다.");
 		}
 	}
 
 
-	private String uploadS3File(MultipartFile file,String path) throws IOException {
+	private String uploadS3File(MultipartFile file, String path) throws IOException {
 		String originalFilename = file.getOriginalFilename();
 		if (originalFilename.lastIndexOf(".") == -1) {
 			throw new S3Exception("확장자명이 올바르지 않습니다.");
@@ -99,28 +95,22 @@ public class S3FileService {
 		return amazonS3.getUrl(bucketName, s3Name).toString();
 	}
 
-	public String getPostFile(Long id){
-		return fileRepository.getPostFile(id);
+	public List<String> getPostFile(ObjectEnum objectEnum, Long objectId, TypeEnum typeEnum) {
+		return fileRepository.getFile(objectEnum, objectId, typeEnum);
 	}
 
-	public void removeImage(Long id){
-		String url = fileRepository.getPostImageByPostId(id);
-		if(url != null){
-			amazonS3.deleteObject(bucketName,url);
+	public void deleteS3File(ObjectEnum objectEnum, Long objectId, TypeEnum typeEnum) {
+		List<String> urls = getPostFile(objectEnum, objectId, typeEnum);
+		if (!urls.isEmpty()) {
+			for (String url : urls) {
+				amazonS3.deleteObject(bucketName, url);
+			}
 		}
-		fileRepository.removeImage(id);
+		fileRepository.deleteFile(objectEnum, objectId, typeEnum);
 	}
 
-	public void removeS3File(Long id){
-		String url = fileRepository.getPostFileByPostId(id);
-		if(url != null){
-			amazonS3.deleteObject(bucketName,url);
-		}
-		fileRepository.removeFile(id);
-	}
-
-	public void deleteS3File(Long id){
-		fileRepository.deleteFile(id);
+	public void deletedS3File(ObjectEnum objectEnum, Long objectId){
+		fileRepository.deletedFile(objectEnum,objectId);
 	}
 
 	public List<String> extractBase64ImagesFromContent(String content) {
@@ -158,6 +148,19 @@ public class S3FileService {
 			content = content.replace(entry.getKey(), entry.getValue());
 		}
 		return content;
+	}
+
+	public String decodeText(List<String> base64Images, String content, ObjectEnum objectEnum,
+		Long objectId) {
+		Map<String, String> base64ToUrlMap = new HashMap<>();
+		for (String base64Image : base64Images) {
+			MultipartFile file = convertBase64ToMultipartFile(base64Image);
+			String uploadedImageUrl = upload(file, "images/", objectEnum, objectId,
+				TypeEnum.IMAGE);
+			base64ToUrlMap.put(base64Image, uploadedImageUrl);
+		}
+		return updateContentWithImageUrls(content,
+			base64ToUrlMap);
 	}
 
 }

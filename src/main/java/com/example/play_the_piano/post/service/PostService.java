@@ -1,8 +1,6 @@
 package com.example.play_the_piano.post.service;
 
 import com.example.play_the_piano.global.entity.ListWrapper;
-import com.example.play_the_piano.global.exception.custom.Base64ConversionException;
-import com.example.play_the_piano.global.exception.custom.InvalidBase64ExceptionException;
 import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
 import com.example.play_the_piano.global.exception.custom.RoleNotAllowedException;
 import com.example.play_the_piano.global.exception.custom.S3Exception;
@@ -15,21 +13,14 @@ import com.example.play_the_piano.post.dto.PostUpdateRequestDto;
 import com.example.play_the_piano.post.entity.Post;
 import com.example.play_the_piano.post.entity.PostEnum;
 import com.example.play_the_piano.post.repository.PostRepository;
-import com.example.play_the_piano.s3file.customMultipartFile.CustomMultipartFile;
+import com.example.play_the_piano.s3file.entity.ObjectEnum;
 import com.example.play_the_piano.s3file.entity.TypeEnum;
 import com.example.play_the_piano.s3file.service.S3FileService;
 import com.example.play_the_piano.user.entity.RoleEnum;
 import com.example.play_the_piano.user.entity.User;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -49,7 +40,8 @@ public class PostService {
 	@CacheEvict(value = "posts", allEntries = true)
 	public Long createPost(PostRequestDto postRequestDto, User user) {
 		checkAdmin(user);
-		List<String> base64Images = fileService.extractBase64ImagesFromContent(postRequestDto.getContent());
+		List<String> base64Images = fileService.extractBase64ImagesFromContent(
+			postRequestDto.getContent());
 		String content = postRequestDto.getContent();
 		if (!base64Images.isEmpty()) {
 			postRequestDto.setContent("");
@@ -57,16 +49,7 @@ public class PostService {
 		Post post = new Post(postRequestDto, user);
 		postRepository.createPost(post);
 		if (!base64Images.isEmpty()) {
-			Map<String, String> base64ToUrlMap = new HashMap<>();
-
-			for (String base64Image : base64Images) {
-				MultipartFile file = fileService.convertBase64ToMultipartFile(base64Image);
-				String uploadedImageUrl = fileService.uploadPostFile(file, "images/", post, TypeEnum.IMAGE);
-				base64ToUrlMap.put(base64Image, uploadedImageUrl);
-			}
-
-			String updatedContent = fileService.updateContentWithImageUrls(content,
-				base64ToUrlMap);
+			String updatedContent = fileService.decodeText(base64Images, content, ObjectEnum.POST,post.getId());
 			post.updateContent(updatedContent);
 			postRepository.updateContent(post.getId(), post.getContent());
 		}
@@ -111,14 +94,14 @@ public class PostService {
 		if (file.isEmpty()) {
 			throw new S3Exception("파일이 유효하지 않습니다.");
 		}
-		fileService.uploadPostFile(file, "files/", post, TypeEnum.FILE);
+		fileService.upload(file, "files/", ObjectEnum.POST,post.getId(), TypeEnum.FILE);
 	}
 
 	@Cacheable(value = "postFile", key = "#id")
-	public String getPostFile(Long id) {
+	public List<String> getPostFile(Long id) {
 		postRepository.getPostById(id)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
-		return fileService.getPostFile(id);
+		return fileService.getPostFile(ObjectEnum.POST,id,TypeEnum.FILE);
 	}
 
 	@Transactional
@@ -132,23 +115,17 @@ public class PostService {
 		checkAdmin(user);
 		Post post = postRepository.getPostById(postId)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
-		List<String> base64Images = fileService.extractBase64ImagesFromContent(postRequestDto.getContent());
+		List<String> base64Images = fileService.extractBase64ImagesFromContent(
+			postRequestDto.getContent());
 		String content = postRequestDto.getContent();
 		if (!base64Images.isEmpty()) {
 			postRequestDto.setContent("");
 		}
 		if (!base64Images.isEmpty()) {
-			Map<String, String> base64ToUrlMap = new HashMap<>();
-			for (String base64Image : base64Images) {
-				MultipartFile file = fileService.convertBase64ToMultipartFile(base64Image);
-				String uploadedImageUrl = fileService.uploadPostFile(file, "images/", post, TypeEnum.IMAGE);
-				base64ToUrlMap.put(base64Image, uploadedImageUrl);
-			}
-			String updatedContent = fileService.updateContentWithImageUrls(content,
-				base64ToUrlMap);
+			String updatedContent = fileService.decodeText(base64Images, content, ObjectEnum.POST,post.getId());
 			postRequestDto.setContent(updatedContent);
 		}
-		fileService.removeImage(postId);
+		fileService.deleteS3File(ObjectEnum.POST,postId,TypeEnum.IMAGE);
 		postRepository.updatePost(postRequestDto);
 	}
 
@@ -161,8 +138,8 @@ public class PostService {
 		if (file.isEmpty()) {
 			throw new S3Exception("파일이 유효하지 않습니다.");
 		}
-		fileService.removeS3File(id);
-		fileService.uploadPostFile(file, "files/", post, TypeEnum.FILE);
+		fileService.deleteS3File(ObjectEnum.POST,post.getId(),TypeEnum.FILE);
+		fileService.upload(file, "files/", ObjectEnum.POST,post.getId(), TypeEnum.FILE);
 	}
 
 	@Transactional
@@ -172,7 +149,7 @@ public class PostService {
 		postRepository.getPostById(postId)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
 		postRepository.deletePost(postId);
-		fileService.deleteS3File(postId);
+		fileService.deletedS3File(ObjectEnum.POST,postId);
 	}
 
 	private void checkAdmin(User user) {
@@ -183,4 +160,5 @@ public class PostService {
 			throw new RoleNotAllowedException("해당 기능을 위한 접근 권한이 없습니다.");
 		}
 	}
+
 }

@@ -58,6 +58,7 @@ public class WebSecurityConfig {
 				.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
 				.permitAll()
 				.requestMatchers(HttpMethod.GET,"/posts/**").permitAll()
+				.requestMatchers("/quizzes/**").permitAll()
 				.requestMatchers("/auth/**").permitAll()
 				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 				.requestMatchers(HttpMethod.GET,"/health-check").permitAll()

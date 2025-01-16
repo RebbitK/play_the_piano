@@ -89,10 +89,10 @@ public class PostController {
 	}
 
 	@GetMapping("/files/{id}")
-	public ResponseEntity<CommonResponse<String>> getPostFile(@PathVariable Long id) {
-		String file = postService.getPostFile(id);
+	public ResponseEntity<CommonResponse<List<String>>> getPostFile(@PathVariable Long id) {
+		List<String> file = postService.getPostFile(id);
 		return ResponseEntity.status(HttpStatus.OK.value())
-			.body(CommonResponse.<String>builder()
+			.body(CommonResponse.<List<String>>builder()
 				.msg("view PostFile successful")
 				.data(file)
 				.build());
