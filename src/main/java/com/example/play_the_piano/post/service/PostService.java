@@ -59,7 +59,7 @@ public class PostService {
 	@Cacheable(value = "posts", key = "#category.name() + '_' + #page + '_' + #size", condition = "#size > 0")
 	public ListWrapper<GetPostsResponseDto> getPosts(PostEnum category, int page, int size) {
 		int offset = (page - 1) * size;
-		int totalPage = postRepository.getTotalPostsCountByCategory(category.name()) / size + 1;
+		int totalPage = (postRepository.getTotalPostsCountByCategory(category.name())-1) / size + 1;
 		List<PostThumbnailDto> posts = postRepository.getPostsByCategory(category.name(), offset,
 			size);
 		List<GetPostsResponseDto> responseDto = posts.stream()
