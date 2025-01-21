@@ -8,17 +8,21 @@
     VALUES (#{title}, #{content}, #{user.id},#{deleted},#{quizLevel},#{answer}, NOW(), NOW())
   </insert>
 
+  <insert id="createCompleteQuiz" useGeneratedKeys="true" keyProperty="id" >
+    INSERT INTO complete_quiz (created_at, modified_at, quiz_id, user_id)
+    VALUES (NOW(),NOW(),#{quiz.id},#{user.id})
+  </insert>
   <update id="updateContent">
     UPDATE quiz
     SET content = #{content}
     WHERE id = #{id}
   </update>
   
-  <select id="getQuizzesByQuizEnum" parameterType="map" resultType="com.example.play_the_piano.quiz.dto.QuizzesResponseDto">
+  <select id="getQuizzesByQuizLevel" parameterType="map" resultType="com.example.play_the_piano.quiz.dto.QuizzesResponseDto">
     SELECT id,title,quiz_level
     FROM quiz
     WHERE deleted = 'UNDELETE' and quiz_level = #{quizLevel}
-    ORDER BY created_at DESC
+    ORDER BY created_at
     LIMIT #{offset}, #{limit}
   </select>
 
@@ -28,7 +32,7 @@
     WHERE deleted = 'UNDELETE' and id = #{id}
   </select>
 
-  <select id="getTotalQuizzesCountByQuizEnum" parameterType="string" resultType="int">
+  <select id="getTotalQuizzesCountByQuizLevel" parameterType="string" resultType="int">
     SELECT COUNT(*)
     FROM quiz
     WHERE quiz_level = #{quizLevel} and deleted = 'UNDELETE'
@@ -40,17 +44,32 @@
     WHERE quiz_level = #{quizLevel} and deleted = 'UNDELETE'
   </select>
 
-  <select id="checkAnswers" parameterType="java.util.List" resultType="com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto">
-    <foreach item="item" index="index" collection="list" open="" separator=" UNION " close="">
-      SELECT
-      #{item.id} AS id,
-      q.answer AS correctAnswer,
-      IF(q.answer = #{item.answer}, true, false) AS isCorrect
-      FROM quiz q
-      WHERE q.id = #{item.id}
-    </foreach>
+  <select id="checkAnswer" parameterType="com.example.play_the_piano.quiz.dto.AnswerQuizRequestDto" resultType="com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto">
+      SELECT id,
+      quiz_level as quizLevel,
+      IF(answer = #{answer}, true, false) AS isCorrect
+      FROM quiz
+      WHERE id = #{id} and deleted = 'UNDELETE'
   </select>
 
+  <select id="getCompleteQuizzes" parameterType="map" resultType="com.example.play_the_piano.quiz.dto.CompleteQuizResponseDto">
+    SELECT q.id AS id
+    FROM complete_quiz cq JOIN quiz q ON cq.quiz_id = q.id
+    WHERE cq.user_id=#{id} and q.quiz_level = #{quizLevel} and q.deleted = 'UNDELETE'
+  </select>
+
+  <select id="getCompleteQuiz" parameterType="map" resultType="boolean">
+    SELECT IF(COUNT(id)>0,true,false) AS isCorrect
+    FROM complete_quiz
+    WHERE user_id=#{userId} and quiz_id=#{quizId}
+  </select>
+
+
+  <select id="getNextQuiz" parameterType="map" resultType="com.example.play_the_piano.quiz.dto.CurrentQuizResponseDto">
+    SELECT id,title,content,quiz_level as quizLevel
+    FROM quiz
+    WHERE id>#{id} and quiz_level = #{quizLevel} and deleted = 'UNDELETE'
+  </select>
 
 
 </mapper>

@@ -5,10 +5,12 @@ import com.example.play_the_piano.global.exception.custom.RoleNotAllowedExceptio
 import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
 import com.example.play_the_piano.quiz.dto.AnswerQuizRequestDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto;
+import com.example.play_the_piano.quiz.dto.CompleteQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.LoadQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizListResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizRequestDto;
 import com.example.play_the_piano.quiz.dto.QuizResponseDto;
+import com.example.play_the_piano.quiz.entity.CompleteQuiz;
 import com.example.play_the_piano.quiz.entity.Quiz;
 import com.example.play_the_piano.quiz.entity.QuizLevel;
 import com.example.play_the_piano.quiz.repository.QuizRepository;
@@ -44,7 +46,8 @@ public class QuizService {
 		Quiz quiz = new Quiz(requestDto, user);
 		quizRepository.createQuiz(quiz);
 		if (!base64Images.isEmpty()) {
-			String updatedContent = fileService.decodeText(base64Images, content, ObjectEnum.QUIZ,quiz.getId());
+			String updatedContent = fileService.decodeText(base64Images, content, ObjectEnum.QUIZ,
+				quiz.getId());
 			quiz.updateContent(updatedContent);
 			quizRepository.updateContent(quiz.getId(), quiz.getContent());
 		}
@@ -52,22 +55,27 @@ public class QuizService {
 	}
 
 	public QuizListResponseDto getQuizzes(User user, QuizLevel quizLevel, int page, int size) {
-		checkAdmin(user);
+		checkStudent(user);
 		int offset = (page - 1) * size;
-		int totalPage = quizRepository.getTotalQuizzesCountByQuizEnum(quizLevel.name()) / size + 1;
+		int totalPage = (quizRepository.getTotalQuizzesCountByQuizLevel(quizLevel.name())-1) / size + 1;
 		return new QuizListResponseDto(
-			quizRepository.getQuizzesByQuizEnum(quizLevel.name(), offset, size), totalPage);
+			quizRepository.getQuizzesByQuizLevel(quizLevel.name(), offset, size), totalPage);
 	}
+
 
 	public QuizResponseDto getQuiz(User user, Long id) {
-		checkAdmin(user);
-		return quizRepository.getQuizById(id).orElseThrow(() ->
+		checkStudent(user);
+		QuizResponseDto responseDto = quizRepository.getQuizById(id).orElseThrow(() ->
 			new QuizNotFoundException("해당 퀴즈가 존재하지 않습니다."));
+		if(user.getRole()!=RoleEnum.ADMIN) {
+			responseDto.setAnswer("");
+		}
+		return responseDto;
 	}
 
-	public List<LoadQuizResponseDto> loadQuiz(User user, QuizLevel quizLevel, int count) {
+	public List<LoadQuizResponseDto> randomQuiz(User user, QuizLevel quizLevel, int count) {
 		checkStudent(user);
-		int totalQuiz = quizRepository.getTotalQuizzesCountByQuizEnum(quizLevel.name());
+		int totalQuiz = quizRepository.getTotalQuizzesCountByQuizLevel(quizLevel.name());
 		if (totalQuiz == 0) {
 			throw new QuizNotFoundException("현재 해당 난이도의 퀴즈가 존재하지 않습니다.");
 		} else if (totalQuiz < count) {
@@ -82,11 +90,26 @@ public class QuizService {
 		return responseDtos.subList(0, count);
 	}
 
-	public List<AnswerQuizResponseDto> answerQuiz(User user,List<AnswerQuizRequestDto> requestDtos) {
+	@Transactional
+	public AnswerQuizResponseDto answerQuiz(User user, AnswerQuizRequestDto requestDto) {
 		checkStudent(user);
-		return quizRepository.checkAnswers(requestDtos);
+		AnswerQuizResponseDto responseDto = quizRepository.checkAnswer(requestDto)
+			.orElseThrow(() -> new QuizNotFoundException("해당 퀴즈가 존재하지 않습니다."));
+		if(responseDto.isCorrect()){
+			quizRepository.createCompleteQuiz(new CompleteQuiz(new Quiz(responseDto.getId()),user));
+		}
+		return responseDto;
 	}
 
+	public List<CompleteQuizResponseDto> getCompleteQuizzes(User user,QuizLevel quizLevel) {
+		checkStudent(user);
+		return quizRepository.getCompleteQuizzes(user.getId(),quizLevel);
+	}
+
+	public boolean getCompleteQuiz(User user,Long quizId) {
+		checkStudent(user);
+		return quizRepository.getCompleteQuiz(user.getId(),quizId);
+	}
 
 	private void checkAdmin(User user) {
 		if (user.getRole() == null) {
