@@ -4,6 +4,7 @@ import com.example.play_the_piano.global.entity.Deleted;
 import com.example.play_the_piano.global.entity.TimeStamped;
 import com.example.play_the_piano.quiz.dto.QuizRequestDto;
 import com.example.play_the_piano.user.entity.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -29,6 +30,7 @@ public class Quiz extends TimeStamped {
 
 	private String title;
 
+	@Column(length = 10000)
 	private String content;
 
 	private String answer;
@@ -49,6 +51,10 @@ public class Quiz extends TimeStamped {
 		this.quizLevel = requestDto.getQuizLevel();
 		this.user = user;
 		deleted = Deleted.UNDELETE;
+	}
+
+	public Quiz(Long id){
+		this.id = id;
 	}
 
 	public void updateContent(String content) {

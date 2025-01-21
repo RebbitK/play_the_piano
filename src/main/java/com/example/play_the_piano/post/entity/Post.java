@@ -4,6 +4,7 @@ import com.example.play_the_piano.global.entity.Deleted;
 import com.example.play_the_piano.global.entity.TimeStamped;
 import com.example.play_the_piano.post.dto.PostRequestDto;
 import com.example.play_the_piano.user.entity.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -29,6 +30,7 @@ public class Post extends TimeStamped {
 
 	private String title;
 
+	@Column(length = 10000)
 	private String content;
 
 	@Enumerated(EnumType.STRING)
