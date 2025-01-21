@@ -1,6 +1,7 @@
 package com.example.play_the_piano.global.exception;
 
 import com.example.play_the_piano.global.common.CommonResponse;
+import com.example.play_the_piano.global.exception.custom.AllQuizzesCompletedException;
 import com.example.play_the_piano.global.exception.custom.Base64ConversionException;
 import com.example.play_the_piano.global.exception.custom.EmailAlreadyRegisteredException;
 import com.example.play_the_piano.global.exception.custom.InvalidAuthCodeException;
@@ -8,11 +9,14 @@ import com.example.play_the_piano.global.exception.custom.InvalidBase64Exception
 import com.example.play_the_piano.global.exception.custom.InvalidPositionException;
 import com.example.play_the_piano.global.exception.custom.PasswordUpdateFailedException;
 import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
+import com.example.play_the_piano.global.exception.custom.QuizGoneException;
+import com.example.play_the_piano.global.exception.custom.QuizIdMismatchException;
 import com.example.play_the_piano.global.exception.custom.QuizNotFoundException;
 import com.example.play_the_piano.global.exception.custom.RoleNotAllowedException;
 import com.example.play_the_piano.global.exception.custom.S3Exception;
 import com.example.play_the_piano.global.exception.custom.SendEmailException;
 import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
+import com.example.play_the_piano.quiz.entity.Quiz;
 import jakarta.servlet.http.HttpServletRequest;
 import javax.management.relation.RoleNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +50,7 @@ public class GlobalControllerAdvice {
 	@ExceptionHandler({IllegalArgumentException.class, NullPointerException.class,
 		DuplicateKeyException.class, PasswordUpdateFailedException.class,
 		EmailAlreadyRegisteredException.class, S3Exception.class, InvalidPositionException.class,
-		InvalidBase64ExceptionException.class, UserNotFoundException.class})
+		InvalidBase64ExceptionException.class, UserNotFoundException.class, QuizIdMismatchException.class})
 	public ResponseEntity<CommonResponse<ErrorResponse>> handleBadRequestException(Exception ex,
 		HttpServletRequest request) {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
@@ -54,7 +58,8 @@ public class GlobalControllerAdvice {
 		return createResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
 	}
 
-	@ExceptionHandler({PostNotFoundException.class, QuizNotFoundException.class})
+	@ExceptionHandler({PostNotFoundException.class, QuizNotFoundException.class,
+		AllQuizzesCompletedException.class})
 	public ResponseEntity<CommonResponse<ErrorResponse>> handlePostNotFoundException(Exception ex,
 		HttpServletRequest request) {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
@@ -86,6 +91,14 @@ public class GlobalControllerAdvice {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
 			ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI(), ex);
 		return createResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+	}
+
+	@ExceptionHandler({QuizGoneException.class})
+	public ResponseEntity<CommonResponse<ErrorResponse>> handleGoneException(Exception ex,
+		HttpServletRequest request) {
+		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
+			ex.getMessage(), HttpStatus.GONE, request.getRequestURI(), ex);
+		return createResponse(HttpStatus.GONE, ex.getMessage());
 	}
 
 
