@@ -106,6 +106,7 @@ public class S3FileService {
 				amazonS3.deleteObject(bucketName, url);
 			}
 		}
+		fileRepository.deleteS3FileRelation(objectEnum,objectId);
 		fileRepository.deleteFile(objectEnum, objectId, typeEnum);
 	}
 

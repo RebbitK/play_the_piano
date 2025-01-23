@@ -19,11 +19,21 @@
     WHERE s.deleted='UNDELETE' and sr.object_enum = #{objectEnum} and sr.object_id = #{objectId} and s.type_enum = #{typeEnum}
   </select>
 
+  <delete id="deleteS3FileRelation" parameterType="map">
+    DELETE FROM s3file_relation
+    WHERE object_enum = #{objectEnum}
+      AND object_id = #{objectId}
+  </delete>
+
   <delete id="deleteFile" parameterType="map">
-    DELETE s
-    FROM s3file s
-    JOIN s3file_relation sr ON s.id = sr.file_id
-    WHERE sr.object_enum = #{objectEnum} and sr.object_id = #{objectId} and s.type_enum = #{typeEnum}
+    DELETE FROM s3file
+    WHERE id IN (
+      SELECT file_id
+      FROM s3file_relation
+      WHERE object_enum = #{objectEnum}
+        AND object_id = #{objectId}
+        AND type_enum = #{typeEnum}
+    )
   </delete>
 
   <update id="deletedFile" parameterType="map">
