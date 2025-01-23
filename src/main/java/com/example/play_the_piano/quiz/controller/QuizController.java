@@ -3,10 +3,10 @@ package com.example.play_the_piano.quiz.controller;
 import com.example.play_the_piano.global.common.CommonResponse;
 import com.example.play_the_piano.quiz.dto.AnswerQuizRequestDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto;
-import com.example.play_the_piano.quiz.dto.CompleteQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizListResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizRequestDto;
 import com.example.play_the_piano.quiz.dto.QuizResponseDto;
+import com.example.play_the_piano.quiz.dto.QuizSearchRequestDto;
 import com.example.play_the_piano.quiz.entity.QuizLevel;
 import com.example.play_the_piano.quiz.service.QuizService;
 import com.example.play_the_piano.user.entity.UserDetailsImpl;
@@ -66,6 +66,28 @@ public class QuizController {
 				.build());
 	}
 
+	@GetMapping("/next")
+	public ResponseEntity<CommonResponse<Long>> getNextQuiz(@RequestParam(name = "quizLevel")
+	QuizLevel quizLevel, @RequestParam(name = "quizId") Long quizId,@AuthenticationPrincipal UserDetailsImpl userDetails) {
+		Long id = quizService.getNextQuiz(userDetails.getUser(),new QuizSearchRequestDto(quizId,quizLevel));
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Long>builder()
+				.msg("get nextQuiz successful")
+				.data(id)
+				.build());
+	}
+
+	@GetMapping("/previous")
+	public ResponseEntity<CommonResponse<Long>> getPreviousQuiz(@RequestParam(name = "quizLevel")
+	QuizLevel quizLevel, @RequestParam(name = "quizId") Long quizId,@AuthenticationPrincipal UserDetailsImpl userDetails) {
+		Long id = quizService.getPreviousQuiz(userDetails.getUser(),new QuizSearchRequestDto(quizId,quizLevel));
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Long>builder()
+				.msg("get previousQuiz successful")
+				.data(id)
+				.build());
+	}
+
 
 	@PostMapping("/answer")
 	public ResponseEntity<CommonResponse<AnswerQuizResponseDto>> answerQuiz(@RequestBody AnswerQuizRequestDto requestDto,@AuthenticationPrincipal UserDetailsImpl userDetails){
@@ -78,11 +100,11 @@ public class QuizController {
 	}
 
 	@GetMapping("/complete-quizzes")
-	public ResponseEntity<CommonResponse<List<CompleteQuizResponseDto>>> getCompleteQuizzes(@RequestParam(name = "quizLevel")
+	public ResponseEntity<CommonResponse<List<Long>>> getCompleteQuizzes(@RequestParam(name = "quizLevel")
 	QuizLevel quizLevel,@AuthenticationPrincipal UserDetailsImpl userDetails) {
-		List<CompleteQuizResponseDto> responseDtos = quizService.getCompleteQuizzes(userDetails.getUser(),quizLevel);
+		List<Long> responseDtos = quizService.getCompleteQuizzes(userDetails.getUser(),quizLevel);
 		return ResponseEntity.status(HttpStatus.OK.value())
-			.body(CommonResponse.<List<CompleteQuizResponseDto>>builder()
+			.body(CommonResponse.<List<Long>>builder()
 				.msg("get CompleteQuizzes successful")
 				.data(responseDtos)
 				.build());

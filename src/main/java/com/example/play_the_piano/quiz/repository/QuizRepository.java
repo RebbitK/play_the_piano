@@ -2,10 +2,9 @@ package com.example.play_the_piano.quiz.repository;
 
 import com.example.play_the_piano.quiz.dto.AnswerQuizRequestDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto;
-import com.example.play_the_piano.quiz.dto.CompleteQuizResponseDto;
-import com.example.play_the_piano.quiz.dto.CurrentQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.LoadQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizResponseDto;
+import com.example.play_the_piano.quiz.dto.QuizSearchRequestDto;
 import com.example.play_the_piano.quiz.dto.QuizzesResponseDto;
 import com.example.play_the_piano.quiz.entity.CompleteQuiz;
 import com.example.play_the_piano.quiz.entity.Quiz;
@@ -35,14 +34,14 @@ public interface QuizRepository {
 
 	Optional<AnswerQuizResponseDto> checkAnswer(AnswerQuizRequestDto requestDto);
 
-	List<CompleteQuizResponseDto> getCompleteQuizzes(@Param("id") Long id,
+	List<Long> getCompleteQuizzes(@Param("id") Long id,
 		@Param("quizLevel") QuizLevel quizLevel);
 
 	boolean getCompleteQuiz(@Param("userId") Long userId,
 		@Param("quizId") Long quizId);
 
-	Optional<CurrentQuizResponseDto> getNextQuiz(@Param("id") Long id,
-		@Param("quizLevel") QuizLevel quizLevel);
+	Optional<Long> getNextQuiz(QuizSearchRequestDto requestDto);
 
+	Optional<Long> getPreviousQuiz(QuizSearchRequestDto requestDto);
 
 }

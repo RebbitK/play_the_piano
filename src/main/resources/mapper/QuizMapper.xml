@@ -27,7 +27,7 @@
   </select>
 
   <select id="getQuizById" parameterType="Long" resultType="com.example.play_the_piano.quiz.dto.QuizResponseDto">
-    SELECT id,title,content,answer,quiz_level
+    SELECT id,title,content,quiz_level
     FROM quiz
     WHERE deleted = 'UNDELETE' and id = #{id}
   </select>
@@ -52,7 +52,7 @@
       WHERE id = #{id} and deleted = 'UNDELETE'
   </select>
 
-  <select id="getCompleteQuizzes" parameterType="map" resultType="com.example.play_the_piano.quiz.dto.CompleteQuizResponseDto">
+  <select id="getCompleteQuizzes" parameterType="map" resultType="Long">
     SELECT q.id AS id
     FROM complete_quiz cq JOIN quiz q ON cq.quiz_id = q.id
     WHERE cq.user_id=#{id} and q.quiz_level = #{quizLevel} and q.deleted = 'UNDELETE'
@@ -65,10 +65,20 @@
   </select>
 
 
-  <select id="getNextQuiz" parameterType="map" resultType="com.example.play_the_piano.quiz.dto.CurrentQuizResponseDto">
-    SELECT id,title,content,quiz_level as quizLevel
+  <select id="getNextQuiz" parameterType="com.example.play_the_piano.quiz.dto.QuizSearchRequestDto" resultType="Long">
+    SELECT id
     FROM quiz
     WHERE id>#{id} and quiz_level = #{quizLevel} and deleted = 'UNDELETE'
+    ORDER BY id
+    LIMIT 1
+  </select>
+
+  <select id="getPreviousQuiz" parameterType="com.example.play_the_piano.quiz.dto.QuizSearchRequestDto" resultType="Long">
+    SELECT id
+    FROM quiz
+    WHERE id&lt;#{id} and quiz_level = #{quizLevel} and deleted = 'UNDELETE'
+    ORDER BY id DESC
+    LIMIT 1
   </select>
 
 

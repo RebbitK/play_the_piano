@@ -12,15 +12,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CurrentQuizResponseDto {
+public class QuizSearchRequestDto {
 
 	private Long id;
 
-	private String title;
-
-	private String content;
-
 	@Enumerated(EnumType.STRING)
 	private QuizLevel quizLevel;
+
 
 }

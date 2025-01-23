@@ -5,11 +5,11 @@ import com.example.play_the_piano.global.exception.custom.RoleNotAllowedExceptio
 import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
 import com.example.play_the_piano.quiz.dto.AnswerQuizRequestDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto;
-import com.example.play_the_piano.quiz.dto.CompleteQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.LoadQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizListResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizRequestDto;
 import com.example.play_the_piano.quiz.dto.QuizResponseDto;
+import com.example.play_the_piano.quiz.dto.QuizSearchRequestDto;
 import com.example.play_the_piano.quiz.entity.CompleteQuiz;
 import com.example.play_the_piano.quiz.entity.Quiz;
 import com.example.play_the_piano.quiz.entity.QuizLevel;
@@ -65,12 +65,20 @@ public class QuizService {
 
 	public QuizResponseDto getQuiz(User user, Long id) {
 		checkStudent(user);
-		QuizResponseDto responseDto = quizRepository.getQuizById(id).orElseThrow(() ->
+		return quizRepository.getQuizById(id).orElseThrow(() ->
 			new QuizNotFoundException("해당 퀴즈가 존재하지 않습니다."));
-		if(user.getRole()!=RoleEnum.ADMIN) {
-			responseDto.setAnswer("");
-		}
-		return responseDto;
+	}
+
+	public Long getNextQuiz(User user, QuizSearchRequestDto requestDto) {
+		checkStudent(user);
+		return quizRepository.getNextQuiz(requestDto).orElseThrow(() ->
+			new QuizNotFoundException("다음 퀴즈가 존재하지 않습니다."));
+	}
+
+	public Long getPreviousQuiz(User user,QuizSearchRequestDto requestDto) {
+		checkStudent(user);
+		return quizRepository.getPreviousQuiz(requestDto).orElseThrow(() ->
+			new QuizNotFoundException("이전 퀴즈가 존재하지 않습니다."));
 	}
 
 	public List<LoadQuizResponseDto> randomQuiz(User user, QuizLevel quizLevel, int count) {
@@ -101,7 +109,7 @@ public class QuizService {
 		return responseDto;
 	}
 
-	public List<CompleteQuizResponseDto> getCompleteQuizzes(User user,QuizLevel quizLevel) {
+	public List<Long> getCompleteQuizzes(User user,QuizLevel quizLevel) {
 		checkStudent(user);
 		return quizRepository.getCompleteQuizzes(user.getId(),quizLevel);
 	}

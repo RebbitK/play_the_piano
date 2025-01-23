@@ -20,8 +20,6 @@ public class QuizResponseDto {
 
 	private String content;
 
-	private String answer;
-
 	@Enumerated(EnumType.STRING)
 	private QuizLevel quizLevel;
 }
