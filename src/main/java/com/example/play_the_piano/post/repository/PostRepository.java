@@ -28,7 +28,7 @@ public interface PostRepository {
 
 	void updateContent(@Param("id") Long id, @Param("content") String content);
 
-	void deletePost(Long id);
+	void softDeletePost(Long id);
 
 	void updatePost(PostUpdateRequestDto requestDto);
 }

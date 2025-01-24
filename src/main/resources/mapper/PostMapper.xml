@@ -68,7 +68,7 @@
     WHERE id = #{id}
   </update>
 
-  <update id="deletePost" parameterType="Long">
+  <update id="softDeletePost" parameterType="Long">
     UPDATE post
     SET deleted = 'DELETE'
     WHERE id =#{id}
@@ -80,7 +80,8 @@
     SET
         title = #{title},
         content = #{content},
-        category = #{category}
+        category = #{category},
+        modified_at = now()
     WHERE id =#{id} and deleted = 'UNDELETE'
   </update>
 

@@ -1,6 +1,7 @@
 package com.example.play_the_piano.post.controller;
 
 import com.example.play_the_piano.global.common.CommonResponse;
+import com.example.play_the_piano.post.dto.GetPostFileResponseDto;
 import com.example.play_the_piano.post.dto.GetPostResponseDto;
 import com.example.play_the_piano.post.dto.GetPostsResponseDto;
 import com.example.play_the_piano.post.dto.PostRequestDto;
@@ -46,8 +47,10 @@ public class PostController {
 	}
 
 	@PostMapping("/files")
-	public ResponseEntity<CommonResponse<Void>> uploadFile(@RequestParam("file") MultipartFile file,
-		@RequestParam("postId") Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+	public ResponseEntity<CommonResponse<Void>> uploadFile(
+		@RequestParam("file") MultipartFile file,
+		@RequestParam("postId") Long postId,
+		@AuthenticationPrincipal UserDetailsImpl userDetails) {
 		postService.uploadPostFile(file, postId, userDetails.getUser());
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<Void>builder()
@@ -55,12 +58,14 @@ public class PostController {
 				.build());
 	}
 
+
 	@GetMapping("/get")
 	public ResponseEntity<CommonResponse<List<GetPostsResponseDto>>> getPosts(
 		@RequestParam(name = "category") PostEnum category,
 		@RequestParam(name = "page", defaultValue = "1") int page,
 		@RequestParam(name = "size", defaultValue = "10") int size) {
-		List<GetPostsResponseDto> responseDto = postService.getPosts(category, page, size).getTList();
+		List<GetPostsResponseDto> responseDto = postService.getPosts(category, page, size)
+			.getTList();
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<List<GetPostsResponseDto>>builder()
 				.msg("view Posts successful")
@@ -89,10 +94,10 @@ public class PostController {
 	}
 
 	@GetMapping("/files/{id}")
-	public ResponseEntity<CommonResponse<List<String>>> getPostFile(@PathVariable Long id) {
-		List<String> file = postService.getPostFile(id);
+	public ResponseEntity<CommonResponse<List<GetPostFileResponseDto>>> getPostFile(@PathVariable Long id) {
+		List<GetPostFileResponseDto> file = postService.getPostFile(id);
 		return ResponseEntity.status(HttpStatus.OK.value())
-			.body(CommonResponse.<List<String>>builder()
+			.body(CommonResponse.<List<GetPostFileResponseDto>>builder()
 				.msg("view PostFile successful")
 				.data(file)
 				.build());
@@ -119,10 +124,10 @@ public class PostController {
 				.build());
 	}
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<CommonResponse<Void>> deletePost(@PathVariable Long id,
+	@PatchMapping("/delete/{id}")
+	public ResponseEntity<CommonResponse<Void>> softDeletePost(@PathVariable Long id,
 		@AuthenticationPrincipal UserDetailsImpl userDetails) {
-		postService.deletePost(id, userDetails.getUser());
+		postService.softDeletePost(id, userDetails.getUser());
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<Void>builder()
 				.msg("delete Post successful")

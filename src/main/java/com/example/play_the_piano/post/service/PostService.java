@@ -5,6 +5,7 @@ import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
 import com.example.play_the_piano.global.exception.custom.RoleNotAllowedException;
 import com.example.play_the_piano.global.exception.custom.S3Exception;
 import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
+import com.example.play_the_piano.post.dto.GetPostFileResponseDto;
 import com.example.play_the_piano.post.dto.GetPostResponseDto;
 import com.example.play_the_piano.post.dto.GetPostsResponseDto;
 import com.example.play_the_piano.post.dto.PostRequestDto;
@@ -19,6 +20,7 @@ import com.example.play_the_piano.s3file.service.S3FileService;
 import com.example.play_the_piano.user.entity.RoleEnum;
 import com.example.play_the_piano.user.entity.User;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -98,10 +100,13 @@ public class PostService {
 	}
 
 	@Cacheable(value = "postFile", key = "#id")
-	public List<String> getPostFile(Long id) {
+	public List<GetPostFileResponseDto> getPostFile(Long id) {
 		postRepository.getPostById(id)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
-		return fileService.getPostFile(ObjectEnum.POST,id,TypeEnum.FILE);
+		List<String> files = fileService.getPostFile(ObjectEnum.POST,id,TypeEnum.FILE);
+		return files.stream()
+			.map(url -> new GetPostFileResponseDto(extractOriginalFileName(url), url))
+			.collect(Collectors.toList());
 	}
 
 	@Transactional
@@ -126,6 +131,7 @@ public class PostService {
 			postRequestDto.setContent(updatedContent);
 		}
 		fileService.deleteS3File(ObjectEnum.POST,postId,TypeEnum.IMAGE);
+		postRequestDto.setId(postId);
 		postRepository.updatePost(postRequestDto);
 	}
 
@@ -144,12 +150,12 @@ public class PostService {
 
 	@Transactional
 	@CacheEvict(value = "posts", allEntries = true)
-	public void deletePost(Long postId, User user) {
+	public void softDeletePost(Long postId, User user) {
 		checkAdmin(user);
 		postRepository.getPostById(postId)
 			.orElseThrow(() -> new PostNotFoundException("해당 포스트가 존재하지 않습니다."));
-		postRepository.deletePost(postId);
-		fileService.deletedS3File(ObjectEnum.POST,postId);
+		postRepository.softDeletePost(postId);
+		fileService.softDeleteS3File(ObjectEnum.POST,postId);
 	}
 
 	private void checkAdmin(User user) {
@@ -159,6 +165,18 @@ public class PostService {
 		if (user.getRole() != RoleEnum.ADMIN) {
 			throw new RoleNotAllowedException("해당 기능을 위한 접근 권한이 없습니다.");
 		}
+	}
+
+	private String extractOriginalFileName(String url) {
+		if (url == null || url.isEmpty()) {
+			return null;
+		}
+		String fileName = url.substring(url.lastIndexOf('/') + 1);
+		int index = fileName.indexOf('-');
+		if (index != -1) {
+			return fileName.substring(index + 2);
+		}
+		return fileName;
 	}
 
 }
