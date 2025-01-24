@@ -7,10 +7,12 @@ import com.example.play_the_piano.user.dto.CheckNicknameDto;
 import com.example.play_the_piano.user.dto.CheckUsernameDto;
 import com.example.play_the_piano.user.dto.LoginRequestDto;
 import com.example.play_the_piano.user.dto.LoginResponseDto;
+import com.example.play_the_piano.user.dto.MyPageResponseDto;
 import com.example.play_the_piano.user.dto.SendEmailDto;
 import com.example.play_the_piano.user.dto.SignupRequestDto;
 import com.example.play_the_piano.user.dto.SignupResponseDto;
 import com.example.play_the_piano.user.dto.UpdatePasswordDto;
+import com.example.play_the_piano.user.entity.UserDetailsImpl;
 import com.example.play_the_piano.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -145,6 +149,34 @@ public class UserController {
 			.body(CommonResponse.<Boolean>builder()
 				.msg("update password successful")
 				.data(check)
+				.build());
+	}
+
+	@GetMapping("/myPage")
+	public ResponseEntity<CommonResponse<MyPageResponseDto>> getMyPage(@AuthenticationPrincipal UserDetailsImpl userDetails){
+		MyPageResponseDto responseDto = userService.getMyPage(userDetails.getUser());
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<MyPageResponseDto>builder()
+				.msg("get MyPage successful")
+				.data(responseDto)
+				.build());
+	}
+
+	@PatchMapping("/update-nickname")
+	public ResponseEntity<CommonResponse<Void>> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,CheckNicknameDto nicknameDto){
+		userService.updateNickname(userDetails.getUser(),nicknameDto);
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Void>builder()
+				.msg("update nickname successful")
+				.build());
+	}
+
+	@PatchMapping("/update-username")
+	public ResponseEntity<CommonResponse<Void>> updateUsername(@AuthenticationPrincipal UserDetailsImpl userDetails,CheckUsernameDto usernameDto){
+		userService.updateUsername(userDetails.getUser(),usernameDto);
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Void>builder()
+				.msg("update username successful")
 				.build());
 	}
 }

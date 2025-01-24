@@ -7,6 +7,9 @@ import com.example.play_the_piano.global.exception.custom.EmailAlreadyRegistered
 import com.example.play_the_piano.global.exception.custom.InvalidAuthCodeException;
 import com.example.play_the_piano.global.exception.custom.InvalidBase64ExceptionException;
 import com.example.play_the_piano.global.exception.custom.InvalidPositionException;
+import com.example.play_the_piano.global.exception.custom.NicknameAlreadyExistsException;
+import com.example.play_the_piano.global.exception.custom.NicknameDuplicateException;
+import com.example.play_the_piano.global.exception.custom.PasswordMismatchException;
 import com.example.play_the_piano.global.exception.custom.PasswordUpdateFailedException;
 import com.example.play_the_piano.global.exception.custom.PostNotFoundException;
 import com.example.play_the_piano.global.exception.custom.QuizGoneException;
@@ -16,6 +19,8 @@ import com.example.play_the_piano.global.exception.custom.RoleNotAllowedExceptio
 import com.example.play_the_piano.global.exception.custom.S3Exception;
 import com.example.play_the_piano.global.exception.custom.SendEmailException;
 import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
+import com.example.play_the_piano.global.exception.custom.UsernameAlreadyExistsException;
+import com.example.play_the_piano.global.exception.custom.UsernameDuplicateException;
 import com.example.play_the_piano.quiz.entity.Quiz;
 import jakarta.servlet.http.HttpServletRequest;
 import javax.management.relation.RoleNotFoundException;
@@ -50,7 +55,9 @@ public class GlobalControllerAdvice {
 	@ExceptionHandler({IllegalArgumentException.class, NullPointerException.class,
 		DuplicateKeyException.class, PasswordUpdateFailedException.class,
 		EmailAlreadyRegisteredException.class, S3Exception.class, InvalidPositionException.class,
-		InvalidBase64ExceptionException.class, UserNotFoundException.class, QuizIdMismatchException.class})
+		InvalidBase64ExceptionException.class, UserNotFoundException.class, QuizIdMismatchException.class,
+		NicknameDuplicateException.class, UsernameDuplicateException.class,
+		PasswordMismatchException.class})
 	public ResponseEntity<CommonResponse<ErrorResponse>> handleBadRequestException(Exception ex,
 		HttpServletRequest request) {
 		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
@@ -100,6 +107,15 @@ public class GlobalControllerAdvice {
 			ex.getMessage(), HttpStatus.GONE, request.getRequestURI(), ex);
 		return createResponse(HttpStatus.GONE, ex.getMessage());
 	}
+
+	@ExceptionHandler({NicknameAlreadyExistsException.class, UsernameAlreadyExistsException.class})
+	public ResponseEntity<CommonResponse<ErrorResponse>> handleConflictException(Exception ex,
+		HttpServletRequest request) {
+		log.error(">>>" + ex.getClass().getName() + "<<< \n msg: {}, code: {}, url: {}",
+			ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI(), ex);
+		return createResponse(HttpStatus.CONFLICT, ex.getMessage());
+	}
+
 
 
 	private ResponseEntity<CommonResponse<ErrorResponse>> createResponse(HttpStatus status,

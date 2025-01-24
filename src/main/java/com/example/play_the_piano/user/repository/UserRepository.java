@@ -1,5 +1,6 @@
 package com.example.play_the_piano.user.repository;
 
+import com.example.play_the_piano.user.dto.MyPageResponseDto;
 import com.example.play_the_piano.user.entity.User;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
@@ -21,4 +22,13 @@ public interface UserRepository {
 
 	void updatePassword(Long id,String password);
 
+	Optional<MyPageResponseDto> getMyPage(Long id);
+
+	Optional<String> getNickname(Long id);
+
+	void updateNickname(Long id, String nickname);
+
+	void updateUsername(Long id, String username);
+
+	Optional<String> getUsername(Long id);
 }

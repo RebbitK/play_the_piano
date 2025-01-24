@@ -2,14 +2,21 @@ package com.example.play_the_piano.user.service;
 
 import com.example.play_the_piano.global.exception.custom.EmailAlreadyRegisteredException;
 import com.example.play_the_piano.global.exception.custom.InvalidAuthCodeException;
+import com.example.play_the_piano.global.exception.custom.NicknameAlreadyExistsException;
+import com.example.play_the_piano.global.exception.custom.NicknameDuplicateException;
+import com.example.play_the_piano.global.exception.custom.PasswordMismatchException;
 import com.example.play_the_piano.global.exception.custom.PasswordUpdateFailedException;
 import com.example.play_the_piano.global.exception.custom.SendEmailException;
+import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
+import com.example.play_the_piano.global.exception.custom.UsernameAlreadyExistsException;
+import com.example.play_the_piano.global.exception.custom.UsernameDuplicateException;
 import com.example.play_the_piano.global.util.RedisUtil;
 import com.example.play_the_piano.user.dto.CheckEmailDto;
 import com.example.play_the_piano.user.dto.CheckNicknameDto;
 import com.example.play_the_piano.user.dto.CheckUsernameDto;
 import com.example.play_the_piano.user.dto.LoginRequestDto;
 import com.example.play_the_piano.user.dto.LoginResponseDto;
+import com.example.play_the_piano.user.dto.MyPageResponseDto;
 import com.example.play_the_piano.user.dto.SendEmailDto;
 import com.example.play_the_piano.user.dto.SignupRequestDto;
 import com.example.play_the_piano.user.dto.SignupResponseDto;
@@ -68,7 +75,7 @@ public class UserService {
 			() -> new NullPointerException("아이디를 입력해 주세요.")
 		);
 		if (check) {
-			throw new IllegalArgumentException("이미 존재하는 아이디 입니다.");
+			throw new UsernameAlreadyExistsException("이미 존재하는 아이디 입니다.");
 		} else {
 			return true;
 		}
@@ -79,7 +86,7 @@ public class UserService {
 			() -> new NullPointerException("닉네임을 입력해 주세요.")
 		);
 		if (check) {
-			throw new IllegalArgumentException("이미 존재하는 닉네임 입니다.");
+			throw new NicknameAlreadyExistsException("이미 존재하는 닉네임 입니다.");
 		} else {
 			return true;
 		}
@@ -137,13 +144,13 @@ public class UserService {
 	@Transactional
 	public SignupResponseDto insertUser(SignupRequestDto requestDto) {
 		if (requestDto.getUsername().isEmpty()) {
-			throw new IllegalArgumentException("아이디 중복 체크를 확인해 주세요.");
+			throw new UsernameDuplicateException("아이디 중복 체크를 확인해 주세요.");
 		}
 		if (requestDto.getNickname().isEmpty()) {
-			throw new IllegalArgumentException("닉네임 중복 체크를 확인해 주세요.");
+			throw new NicknameDuplicateException("닉네임 중복 체크를 확인해 주세요.");
 		}
 		if (!requestDto.getPassword().equals(requestDto.getCheckPassword())) {
-			throw new IllegalArgumentException("두 비밀번호가 일치하지 않습니다.");
+			throw new PasswordMismatchException("두 비밀번호가 일치하지 않습니다.");
 		}
 		String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 		User user = new User(requestDto, encodedPassword);
@@ -153,9 +160,9 @@ public class UserService {
 
 	public LoginResponseDto login(LoginRequestDto requestDto) {
 		User user = userRepository.findByUsername(requestDto.getUsername()).orElseThrow(
-			() -> new IllegalArgumentException("존재하지 않는 아이디 입니다."));
+			() -> new UserNotFoundException("존재하지 않는 아이디 입니다."));
 		if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-			throw new IllegalArgumentException("비밀번호가 다릅니다.");
+			throw new UserNotFoundException("비밀번호가 다릅니다.");
 		}
 		return new LoginResponseDto(user.getId(), user.getUsername(), user.getNickname(),
 			user.getRole());
@@ -211,10 +218,34 @@ public class UserService {
 			() -> new InvalidAuthCodeException("유효하지 않은 이메일 입니다.")
 		);
 		if (!passwordDto.getPassword().equals(passwordDto.getCheckPassword())) {
-			throw new IllegalArgumentException("두 비밀번호가 일치하지 않습니다.");
+			throw new PasswordMismatchException("두 비밀번호가 일치하지 않습니다.");
 		}
 		String encodedPassword = passwordEncoder.encode(passwordDto.getPassword());
 		userRepository.updatePassword(id, encodedPassword);
 		return true;
+	}
+
+	@Transactional
+	public void updateNickname(User user,CheckNicknameDto nicknameDto){
+		String currentNickname = userRepository.getNickname(user.getId()).orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저 입니다."));
+		if(currentNickname.equals(nicknameDto.getNickname())){
+			throw new NicknameDuplicateException("현재 닉네임과 같은 닉네임 입니다.");
+		}
+		checkNickname(nicknameDto);
+		userRepository.updateNickname(user.getId(), nicknameDto.getNickname());
+	}
+
+	@Transactional
+	public void updateUsername(User user,CheckUsernameDto usernameDto){
+		String currentUsername = userRepository.getUsername(user.getId()).orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저 입니다."));
+		if(currentUsername.equals(usernameDto.getUsername())){
+			throw new UsernameDuplicateException("현재 아이디와 같은 아이디 입니다.");
+		}
+		checkUsername(usernameDto);
+		userRepository.updateUsername(user.getId(), usernameDto.getUsername());
+	}
+
+	public MyPageResponseDto getMyPage(User user){
+		return userRepository.getMyPage(user.getId()).orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저 입니다."));
 	}
 }
