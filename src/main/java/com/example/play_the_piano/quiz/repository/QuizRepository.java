@@ -2,9 +2,9 @@ package com.example.play_the_piano.quiz.repository;
 
 import com.example.play_the_piano.quiz.dto.AnswerQuizRequestDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto;
-import com.example.play_the_piano.quiz.dto.LoadQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizSearchRequestDto;
+import com.example.play_the_piano.quiz.dto.QuizUpdateRequestDto;
 import com.example.play_the_piano.quiz.dto.QuizzesResponseDto;
 import com.example.play_the_piano.quiz.entity.CompleteQuiz;
 import com.example.play_the_piano.quiz.entity.Quiz;
@@ -30,7 +30,7 @@ public interface QuizRepository {
 
 	int getTotalQuizzesCountByQuizLevel(@Param("quizLevel") String quizLevel);
 
-	List<LoadQuizResponseDto> loadQuizzesByQuizEnum(@Param("quizLevel") String quizLevel);
+	List<QuizResponseDto> loadQuizzesByQuizEnum(@Param("quizLevel") String quizLevel);
 
 	Optional<AnswerQuizResponseDto> checkAnswer(AnswerQuizRequestDto requestDto);
 
@@ -43,5 +43,7 @@ public interface QuizRepository {
 	Optional<Long> getNextQuiz(QuizSearchRequestDto requestDto);
 
 	Optional<Long> getPreviousQuiz(QuizSearchRequestDto requestDto);
+
+	void updateQuiz(QuizUpdateRequestDto requestDto);
 
 }

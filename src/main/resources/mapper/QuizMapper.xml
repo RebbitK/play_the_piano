@@ -38,7 +38,7 @@
     WHERE quiz_level = #{quizLevel} and deleted = 'UNDELETE'
   </select>
 
-  <select id="loadQuizzesByQuizEnum" parameterType="String" resultType="com.example.play_the_piano.quiz.dto.LoadQuizResponseDto">
+  <select id="loadQuizzesByQuizEnum" parameterType="String" resultType="com.example.play_the_piano.quiz.dto.QuizResponseDto">
     SELECT id,title,content,quiz_level
     FROM quiz
     WHERE quiz_level = #{quizLevel} and deleted = 'UNDELETE'
@@ -81,5 +81,14 @@
     LIMIT 1
   </select>
 
+  <update id="updateQuiz" parameterType="com.example.play_the_piano.quiz.dto.QuizUpdateRequestDto">
+    UPDATE quiz
+    SET title=#{title},
+        content=#{content},
+        answer=#{answer},
+        quiz_level=#{quizLevel},
+        modified_at=now()
+    WHERE id=#{id}
+  </update>
 
 </mapper>
