@@ -3,6 +3,7 @@ package com.example.play_the_piano.quiz.service;
 import com.example.play_the_piano.global.exception.custom.QuizNotFoundException;
 import com.example.play_the_piano.global.exception.custom.RoleNotAllowedException;
 import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
+import com.example.play_the_piano.quiz.dto.AdminQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizRequestDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizListResponseDto;
@@ -100,6 +101,11 @@ public class QuizService {
 		return responseDtos.subList(0, count);
 	}
 
+	public AdminQuizResponseDto getAdminQuiz(User user,Long id){
+		checkAdmin(user);
+		return quizRepository.getAdminQuiz(id).orElseThrow(() -> new QuizNotFoundException("해당 퀴즈가 존재하지 않습니다."));
+	}
+
 	@Transactional
 	public AnswerQuizResponseDto answerQuiz(User user, AnswerQuizRequestDto requestDto) {
 		checkStudent(user);
@@ -127,6 +133,15 @@ public class QuizService {
 		}
 		fileService.deleteS3File(ObjectEnum.QUIZ, requestDto.getId(), TypeEnum.IMAGE);
 		quizRepository.updateQuiz(requestDto);
+	}
+
+	@Transactional
+	public void softDeleteQuiz(User user,Long id){
+		checkAdmin(user);
+		quizRepository.getQuizById(id).orElseThrow(() ->
+			new QuizNotFoundException("해당 퀴즈가 존재하지 않습니다."));
+		fileService.softDeleteS3File(ObjectEnum.QUIZ,id);
+		quizRepository.softDeleteQuiz(id);
 	}
 
 	public List<Long> getCompleteQuizzes(User user, QuizLevel quizLevel) {

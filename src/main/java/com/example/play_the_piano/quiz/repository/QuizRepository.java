@@ -1,5 +1,6 @@
 package com.example.play_the_piano.quiz.repository;
 
+import com.example.play_the_piano.quiz.dto.AdminQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizRequestDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizResponseDto;
@@ -45,5 +46,9 @@ public interface QuizRepository {
 	Optional<Long> getPreviousQuiz(QuizSearchRequestDto requestDto);
 
 	void updateQuiz(QuizUpdateRequestDto requestDto);
+
+	Optional<AdminQuizResponseDto> getAdminQuiz(Long id);
+
+	void softDeleteQuiz(Long id);
 
 }

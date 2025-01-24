@@ -81,6 +81,18 @@
     LIMIT 1
   </select>
 
+  <select id="getAdminQuiz" parameterType="Long" resultType="com.example.play_the_piano.quiz.dto.AdminQuizResponseDto">
+    SELECT id,title,content,answer,quiz_level as quizLevel
+    FROM quiz
+    WHERE id = #{id} and deleted = 'UNDELETE'
+  </select>
+
+  <update id="softDeleteQuiz" parameterType="Long">
+    UPDATE quiz
+    SET deleted='DELETE'
+    WHERE id=#{id}
+  </update>
+
   <update id="updateQuiz" parameterType="com.example.play_the_piano.quiz.dto.QuizUpdateRequestDto">
     UPDATE quiz
     SET title=#{title},

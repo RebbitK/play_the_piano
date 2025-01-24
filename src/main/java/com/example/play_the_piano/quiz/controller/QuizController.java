@@ -1,6 +1,7 @@
 package com.example.play_the_piano.quiz.controller;
 
 import com.example.play_the_piano.global.common.CommonResponse;
+import com.example.play_the_piano.quiz.dto.AdminQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizRequestDto;
 import com.example.play_the_piano.quiz.dto.AnswerQuizResponseDto;
 import com.example.play_the_piano.quiz.dto.QuizListResponseDto;
@@ -68,6 +69,16 @@ public class QuizController {
 				.build());
 	}
 
+	@GetMapping("/admin/{id}")
+	public ResponseEntity<CommonResponse<AdminQuizResponseDto>> getAdminQuiz(@PathVariable Long id,@AuthenticationPrincipal UserDetailsImpl userDetails){
+		AdminQuizResponseDto responseDto = quizService.getAdminQuiz(userDetails.getUser(),id);
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<AdminQuizResponseDto>builder()
+				.msg("get adminQuiz successful")
+				.data(responseDto)
+				.build());
+	}
+
 	@GetMapping("/next")
 	public ResponseEntity<CommonResponse<Long>> getNextQuiz(@RequestParam(name = "quizLevel")
 	QuizLevel quizLevel, @RequestParam(name = "quizId") Long quizId,@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -128,6 +139,16 @@ public class QuizController {
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<Void>builder()
 				.msg("update Quiz successful")
+				.build());
+	}
+
+	@PatchMapping("/delete/{id}")
+	public ResponseEntity<CommonResponse<Void>> softDeleteQuiz(@PathVariable Long id,
+		@AuthenticationPrincipal UserDetailsImpl userDetails) {
+		quizService.softDeleteQuiz(userDetails.getUser(),id);
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Void>builder()
+				.msg("delete quiz successful")
 				.build());
 	}
 
