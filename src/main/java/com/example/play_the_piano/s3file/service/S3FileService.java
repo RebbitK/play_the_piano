@@ -110,8 +110,8 @@ public class S3FileService {
 		fileRepository.deleteFile(objectEnum, objectId, typeEnum);
 	}
 
-	public void deletedS3File(ObjectEnum objectEnum, Long objectId){
-		fileRepository.deletedFile(objectEnum,objectId);
+	public void softDeleteS3File(ObjectEnum objectEnum, Long objectId){
+		fileRepository.softDeleteFile(objectEnum,objectId);
 	}
 
 	public List<String> extractBase64ImagesFromContent(String content) {

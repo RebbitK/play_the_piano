@@ -18,7 +18,7 @@ public interface S3FileRepository {
 
 	void deleteFile(ObjectEnum objectEnum, Long objectId, TypeEnum typeEnum);
 
-	void deletedFile(ObjectEnum objectEnum, Long objectId);
+	void softDeleteFile(ObjectEnum objectEnum, Long objectId);
 
 	void deleteS3FileRelation(ObjectEnum objectEnum, Long objectId);
 }

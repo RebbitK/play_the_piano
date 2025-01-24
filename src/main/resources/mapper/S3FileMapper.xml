@@ -36,7 +36,7 @@
     )
   </delete>
 
-  <update id="deletedFile" parameterType="map">
+  <update id="softDeleteFile" parameterType="map">
     UPDATE s3file s JOIN s3file_relation sr ON s.id = sr.file_id
     SET
         deleted = 'DELETE'
