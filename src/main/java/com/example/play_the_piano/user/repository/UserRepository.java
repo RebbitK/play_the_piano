@@ -1,6 +1,7 @@
 package com.example.play_the_piano.user.repository;
 
 import com.example.play_the_piano.user.dto.MyPageResponseDto;
+import com.example.play_the_piano.user.entity.RoleChangeRequest;
 import com.example.play_the_piano.user.entity.User;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
@@ -8,7 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface UserRepository {
 
-	void insertUser(User user);
+	void createUser(User user);
 
 	Optional<Boolean> existsByUsername(String username);
 
@@ -31,4 +32,12 @@ public interface UserRepository {
 	void updateUsername(Long id, String username);
 
 	Optional<String> getUsername(Long id);
+
+	void createRoleChangeRequest(RoleChangeRequest roleChangeRequest);
+
+	Optional<Long> getRoleChangeRequest(Long id);
+
+	void deleteRoleChangeRequest(Long id);
+
+	void updateRoleStudent(Long id);
 }

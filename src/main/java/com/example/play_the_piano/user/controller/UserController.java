@@ -12,6 +12,7 @@ import com.example.play_the_piano.user.dto.SendEmailDto;
 import com.example.play_the_piano.user.dto.SignupRequestDto;
 import com.example.play_the_piano.user.dto.SignupResponseDto;
 import com.example.play_the_piano.user.dto.UpdatePasswordDto;
+import com.example.play_the_piano.user.entity.RoleEnum;
 import com.example.play_the_piano.user.entity.UserDetailsImpl;
 import com.example.play_the_piano.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -179,4 +181,24 @@ public class UserController {
 				.msg("update username successful")
 				.build());
 	}
+
+	@PostMapping("/role/change/request")
+	public ResponseEntity<CommonResponse<Void>> createRoleChangeRequest(@AuthenticationPrincipal UserDetailsImpl userDetails){
+		userService.createRoleChangeRequest(userDetails.getUser());
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Void>builder()
+				.msg("roleChange request successful")
+				.build());
+	}
+
+	@PatchMapping("/role/change/request/{id}/approve")
+	public ResponseEntity<CommonResponse<Void>> updateUserRole(@AuthenticationPrincipal UserDetailsImpl userDetails,@PathVariable Long id){
+		userService.updateUserRole(userDetails.getUser(),id);
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Void>builder()
+				.msg("roleChange request successful")
+				.build());
+	}
+
+
 }

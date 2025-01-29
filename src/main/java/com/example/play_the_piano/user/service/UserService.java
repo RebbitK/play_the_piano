@@ -6,6 +6,7 @@ import com.example.play_the_piano.global.exception.custom.NicknameAlreadyExistsE
 import com.example.play_the_piano.global.exception.custom.NicknameDuplicateException;
 import com.example.play_the_piano.global.exception.custom.PasswordMismatchException;
 import com.example.play_the_piano.global.exception.custom.PasswordUpdateFailedException;
+import com.example.play_the_piano.global.exception.custom.RoleNotAllowedException;
 import com.example.play_the_piano.global.exception.custom.SendEmailException;
 import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
 import com.example.play_the_piano.global.exception.custom.UsernameAlreadyExistsException;
@@ -21,6 +22,8 @@ import com.example.play_the_piano.user.dto.SendEmailDto;
 import com.example.play_the_piano.user.dto.SignupRequestDto;
 import com.example.play_the_piano.user.dto.SignupResponseDto;
 import com.example.play_the_piano.user.dto.UpdatePasswordDto;
+import com.example.play_the_piano.user.entity.RoleChangeRequest;
+import com.example.play_the_piano.user.entity.RoleEnum;
 import com.example.play_the_piano.user.entity.User;
 import com.example.play_the_piano.user.repository.UserRepository;
 import jakarta.mail.internet.MimeMessage;
@@ -154,7 +157,7 @@ public class UserService {
 		}
 		String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 		User user = new User(requestDto, encodedPassword);
-		userRepository.insertUser(user);
+		userRepository.createUser(user);
 		return new SignupResponseDto(requestDto.getUsername(), requestDto.getNickname());
 	}
 
@@ -243,6 +246,29 @@ public class UserService {
 		}
 		checkUsername(usernameDto);
 		userRepository.updateUsername(user.getId(), usernameDto.getUsername());
+	}
+
+	@Transactional
+	public void createRoleChangeRequest(User user){
+		if(user.getRole()!=RoleEnum.CUSTOMER){
+			throw new RoleNotAllowedException("손님만 신청이 가능합니다.");
+		}
+		if(userRepository.getRoleChangeRequest(user.getId()).isPresent()){
+			throw new RoleNotAllowedException("이미 신청하셨습니다.");
+		}
+		userRepository.createRoleChangeRequest(new RoleChangeRequest(user));
+	}
+
+	@Transactional
+	public void updateUserRole(User user,Long id){
+		if(user.getRole()!=RoleEnum.ADMIN){
+			throw new RoleNotAllowedException("해당 기능을 위한 접근 권한이 없습니다.");
+		}
+		if(userRepository.getRoleChangeRequest(id).isEmpty()){
+			throw new UserNotFoundException("신청기록이 없는 유저입니다.");
+		}
+		userRepository.updateRoleStudent(id);
+		userRepository.deleteRoleChangeRequest(id);
 	}
 
 	public MyPageResponseDto getMyPage(User user){
