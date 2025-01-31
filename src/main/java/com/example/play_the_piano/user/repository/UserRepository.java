@@ -1,8 +1,10 @@
 package com.example.play_the_piano.user.repository;
 
 import com.example.play_the_piano.user.dto.MyPageResponseDto;
+import com.example.play_the_piano.user.dto.RoleChangeResponseDto;
 import com.example.play_the_piano.user.entity.RoleChangeRequest;
 import com.example.play_the_piano.user.entity.User;
+import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -21,7 +23,7 @@ public interface UserRepository {
 
 	Optional<Long> findIdByEmail(String email);
 
-	void updatePassword(Long id,String password);
+	void updatePassword(Long id, String password);
 
 	Optional<MyPageResponseDto> getMyPage(Long id);
 
@@ -33,6 +35,8 @@ public interface UserRepository {
 
 	Optional<String> getUsername(Long id);
 
+	Optional<String> getEmail(Long id);
+
 	void createRoleChangeRequest(RoleChangeRequest roleChangeRequest);
 
 	Optional<Long> getRoleChangeRequest(Long id);
@@ -40,4 +44,8 @@ public interface UserRepository {
 	void deleteRoleChangeRequest(Long id);
 
 	void updateRoleStudent(Long id);
+
+	List<RoleChangeResponseDto> getRoleChangeRequests(int offset, int limit);
+
+	void deleteUser(Long id);
 }

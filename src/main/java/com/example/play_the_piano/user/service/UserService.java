@@ -5,7 +5,6 @@ import com.example.play_the_piano.global.exception.custom.InvalidAuthCodeExcepti
 import com.example.play_the_piano.global.exception.custom.NicknameAlreadyExistsException;
 import com.example.play_the_piano.global.exception.custom.NicknameDuplicateException;
 import com.example.play_the_piano.global.exception.custom.PasswordMismatchException;
-import com.example.play_the_piano.global.exception.custom.PasswordUpdateFailedException;
 import com.example.play_the_piano.global.exception.custom.RoleNotAllowedException;
 import com.example.play_the_piano.global.exception.custom.SendEmailException;
 import com.example.play_the_piano.global.exception.custom.UserNotFoundException;
@@ -18,6 +17,7 @@ import com.example.play_the_piano.user.dto.CheckUsernameDto;
 import com.example.play_the_piano.user.dto.LoginRequestDto;
 import com.example.play_the_piano.user.dto.LoginResponseDto;
 import com.example.play_the_piano.user.dto.MyPageResponseDto;
+import com.example.play_the_piano.user.dto.RoleChangeResponseDto;
 import com.example.play_the_piano.user.dto.SendEmailDto;
 import com.example.play_the_piano.user.dto.SignupRequestDto;
 import com.example.play_the_piano.user.dto.SignupResponseDto;
@@ -28,6 +28,7 @@ import com.example.play_the_piano.user.entity.User;
 import com.example.play_the_piano.user.repository.UserRepository;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -209,7 +210,7 @@ public class UserService {
 		if (emailDto.getCode() == null || !emailDto.getCode().equals(redisCode)) {
 			throw new InvalidAuthCodeException("인증번호가 일치하지 않습니다.");
 		}
-		if(userRepository.findIdByEmail(emailDto.getEmail()).isEmpty()){
+		if (userRepository.findIdByEmail(emailDto.getEmail()).isEmpty()) {
 			throw new EmailAlreadyRegisteredException("해당 이메일로 가입된 계정을 찾을 수 없습니다.");
 		}
 		return true;
@@ -229,9 +230,10 @@ public class UserService {
 	}
 
 	@Transactional
-	public void updateNickname(User user,CheckNicknameDto nicknameDto){
-		String currentNickname = userRepository.getNickname(user.getId()).orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저 입니다."));
-		if(currentNickname.equals(nicknameDto.getNickname())){
+	public void updateNickname(User user, CheckNicknameDto nicknameDto) {
+		String currentNickname = userRepository.getNickname(user.getId())
+			.orElseThrow(() -> new UserNotFoundException("존재하지 않는 유저 입니다."));
+		if (currentNickname.equals(nicknameDto.getNickname())) {
 			throw new NicknameDuplicateException("현재 닉네임과 같은 닉네임 입니다.");
 		}
 		checkNickname(nicknameDto);
@@ -239,9 +241,10 @@ public class UserService {
 	}
 
 	@Transactional
-	public void updateUsername(User user,CheckUsernameDto usernameDto){
-		String currentUsername = userRepository.getUsername(user.getId()).orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저 입니다."));
-		if(currentUsername.equals(usernameDto.getUsername())){
+	public void updateUsername(User user, CheckUsernameDto usernameDto) {
+		String currentUsername = userRepository.getUsername(user.getId())
+			.orElseThrow(() -> new UserNotFoundException("존재하지 않는 유저 입니다."));
+		if (currentUsername.equals(usernameDto.getUsername())) {
 			throw new UsernameDuplicateException("현재 아이디와 같은 아이디 입니다.");
 		}
 		checkUsername(usernameDto);
@@ -249,29 +252,59 @@ public class UserService {
 	}
 
 	@Transactional
-	public void createRoleChangeRequest(User user){
-		if(user.getRole()!=RoleEnum.CUSTOMER){
+	public void createRoleChangeRequest(User user, String content) {
+		if (user.getRole() != RoleEnum.CUSTOMER) {
 			throw new RoleNotAllowedException("손님만 신청이 가능합니다.");
 		}
-		if(userRepository.getRoleChangeRequest(user.getId()).isPresent()){
+		if (userRepository.getRoleChangeRequest(user.getId()).isPresent()) {
 			throw new RoleNotAllowedException("이미 신청하셨습니다.");
 		}
-		userRepository.createRoleChangeRequest(new RoleChangeRequest(user));
+		userRepository.createRoleChangeRequest(new RoleChangeRequest(user, content));
 	}
 
 	@Transactional
-	public void updateUserRole(User user,Long id){
-		if(user.getRole()!=RoleEnum.ADMIN){
+	public void updateUserRole(User user, Long id) {
+		if (user.getRole() != RoleEnum.ADMIN) {
 			throw new RoleNotAllowedException("해당 기능을 위한 접근 권한이 없습니다.");
 		}
-		if(userRepository.getRoleChangeRequest(id).isEmpty()){
+		if (userRepository.getRoleChangeRequest(id).isEmpty()) {
 			throw new UserNotFoundException("신청기록이 없는 유저입니다.");
 		}
 		userRepository.updateRoleStudent(id);
 		userRepository.deleteRoleChangeRequest(id);
 	}
 
-	public MyPageResponseDto getMyPage(User user){
-		return userRepository.getMyPage(user.getId()).orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저 입니다."));
+	public MyPageResponseDto getMyPage(User user) {
+		return userRepository.getMyPage(user.getId())
+			.orElseThrow(() -> new UserNotFoundException("존재하지 않는 유저 입니다."));
+	}
+
+	public List<RoleChangeResponseDto> getRoleChangeRequests(User user, int page, int size) {
+		if (user.getRole() != RoleEnum.ADMIN) {
+			throw new RoleNotAllowedException("해당 기능을 위한 접근 권한이 없습니다.");
+		}
+		return userRepository.getRoleChangeRequests(page, size);
+	}
+
+	public void sendDeleteAccountEmail(User user) {
+		String code = createCode();
+		String email = userRepository.getEmail(user.getId())
+			.orElseThrow(() -> new UserNotFoundException("존재하지 않는 유저 입니다."));
+		sendEmail(email, "Play The Piano", setContext(code, "email-deleteAccount"),
+			code, "deleteAccount:");
+	}
+
+	@Transactional
+	public void deleteAccount(User user,String code) {
+		String email = userRepository.getEmail(user.getId())
+			.orElseThrow(() -> new UserNotFoundException("존재하지 않는 유저 입니다."));
+		String redisCode = redisUtil.getData("deleteAccount:" + email);
+		if (redisCode == null || redisCode.isEmpty()) {
+			throw new InvalidAuthCodeException("이메일에 해당하는 인증 요청이 존재하지 않습니다. 인증을 다시 시도해주세요.");
+		}
+		if (code == null || !code.equals(redisCode)) {
+			throw new InvalidAuthCodeException("인증번호가 일치하지 않습니다.");
+		}
+		userRepository.deleteUser(user.getId());
 	}
 }

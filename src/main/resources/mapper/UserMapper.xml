@@ -8,8 +8,8 @@
   </insert>
 
   <insert id="createRoleChangeRequest" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO role_change_request(user_id)
-    VALUE #{user.id}
+    INSERT INTO role_change_request(user_id,content)
+    VALUES (#{user.id},#{content})
   </insert>
 
   <select id="findByUsername" resultType="com.example.play_the_piano.user.entity.User">
@@ -64,10 +64,23 @@
     WHERE id=#{id}
   </select>
 
+  <select id="getEmail" resultType="String">
+    SELECT email
+    FROM users
+    WHERE id=#{id}
+  </select>
+
   <select id="getRoleChangeRequest" resultType="Long">
     SELECT id
     FROM role_change_request
     WHERE user_id=#{id}
+  </select>
+
+  <select id="getRoleChangeRequests" parameterType="map" resultType="com.example.play_the_piano.user.dto.RoleChangeResponseDto" >
+    SELECT u.username,u.nickname,r.content
+    FROM role_change_request r JOIN users u on r.user_id = u.id
+    ORDER BY r.created_at
+    LIMIT #{offset}, #{limit}
   </select>
 
   <update id="updatePassword" >
@@ -95,7 +108,8 @@
   </update>
 
   <delete id="deleteUser">
-    DELETE FROM users WHERE id = #{id}
+    DELETE FROM refresh_token WHERE user_id = #{id};
+    DELETE FROM users WHERE id = #{id};
   </delete>
 
   <delete id="deleteRoleChangeRequest">
