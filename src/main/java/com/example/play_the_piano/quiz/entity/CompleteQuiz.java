@@ -2,6 +2,7 @@ package com.example.play_the_piano.quiz.entity;
 
 import com.example.play_the_piano.global.entity.TimeStamped;
 import com.example.play_the_piano.user.entity.User;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -26,7 +27,7 @@ public class CompleteQuiz extends TimeStamped {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Quiz quiz;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	private User user;
 
 	public CompleteQuiz(Quiz quiz, User user) {

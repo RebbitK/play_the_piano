@@ -1,5 +1,7 @@
 package com.example.play_the_piano.user.entity;
 
+import com.example.play_the_piano.global.entity.TimeStamped;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,17 +16,20 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class RoleChangeRequest {
+public class RoleChangeRequest extends TimeStamped {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne
+	@OneToOne(cascade = CascadeType.REMOVE)
 	private User user;
 
-	public RoleChangeRequest(User user) {
+	private String content;
+
+	public RoleChangeRequest(User user, String content) {
 		this.user = user;
+		this.content = content;
 	}
 
 }
