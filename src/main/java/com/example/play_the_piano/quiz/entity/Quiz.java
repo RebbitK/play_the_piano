@@ -5,13 +5,16 @@ import com.example.play_the_piano.global.entity.TimeStamped;
 import com.example.play_the_piano.quiz.dto.QuizRequestDto;
 import com.example.play_the_piano.user.entity.User;
 import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -42,6 +45,7 @@ public class Quiz extends TimeStamped {
 	private QuizLevel quizLevel;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = true)
 	private User user;
 
 	public Quiz(QuizRequestDto requestDto, User user) {

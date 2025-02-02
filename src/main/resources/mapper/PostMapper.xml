@@ -42,11 +42,9 @@
     SELECT title,
            content,
            category,
-           u.nickname       as nickname,
            post.created_at  as createdAt,
            post.modified_at as modifiedAt
     FROM post
-           JOIN piano.users u on u.id = post.user_id
     WHERE post.id = #{id} and deleted = 'UNDELETE'
   </select>
 

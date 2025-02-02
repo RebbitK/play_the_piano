@@ -7,6 +7,8 @@ import lombok.Getter;
 @Getter
 public class RoleChangeResponseDto {
 
+	private Long id;
+
 	private String username;
 
 	private String nickname;

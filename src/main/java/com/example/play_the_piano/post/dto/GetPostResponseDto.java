@@ -27,8 +27,6 @@ public class GetPostResponseDto {
 	@Enumerated(EnumType.STRING)
 	private PostEnum category;
 
-	private String nickname;
-
 	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")

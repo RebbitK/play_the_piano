@@ -294,6 +294,10 @@ public class UserService {
 			code, "deleteAccount:");
 	}
 
+	public boolean getRoleChangeRequest(User user){
+		return userRepository.getRoleChangeRequest(user.getId()).isPresent();
+	}
+
 	@Transactional
 	public void deleteAccount(User user,String code) {
 		String email = userRepository.getEmail(user.getId())
@@ -305,6 +309,7 @@ public class UserService {
 		if (code == null || !code.equals(redisCode)) {
 			throw new InvalidAuthCodeException("인증번호가 일치하지 않습니다.");
 		}
+		userRepository.deleteUserToken(user.getId());
 		userRepository.deleteUser(user.getId());
 	}
 }

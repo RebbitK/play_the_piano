@@ -48,4 +48,7 @@ public interface UserRepository {
 	List<RoleChangeResponseDto> getRoleChangeRequests(int offset, int limit);
 
 	void deleteUser(Long id);
+
+	void deleteUserToken(Long id);
+
 }

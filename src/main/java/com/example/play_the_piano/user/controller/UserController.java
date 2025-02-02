@@ -183,7 +183,7 @@ public class UserController {
 
 	@PatchMapping("/update-nickname")
 	public ResponseEntity<CommonResponse<Void>> updateNickname(
-		@AuthenticationPrincipal UserDetailsImpl userDetails, CheckNicknameDto nicknameDto) {
+		@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody  CheckNicknameDto nicknameDto) {
 		userService.updateNickname(userDetails.getUser(), nicknameDto);
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<Void>builder()
@@ -193,7 +193,7 @@ public class UserController {
 
 	@PatchMapping("/update-username")
 	public ResponseEntity<CommonResponse<Void>> updateUsername(
-		@AuthenticationPrincipal UserDetailsImpl userDetails, CheckUsernameDto usernameDto) {
+		@AuthenticationPrincipal UserDetailsImpl userDetails,  @RequestBody CheckUsernameDto usernameDto) {
 		userService.updateUsername(userDetails.getUser(), usernameDto);
 		return ResponseEntity.status(HttpStatus.OK.value())
 			.body(CommonResponse.<Void>builder()
@@ -211,6 +211,16 @@ public class UserController {
 				.build());
 	}
 
+	@GetMapping("/role/change/request")
+	public ResponseEntity<CommonResponse<Boolean>> getRoleChangeRequest(@AuthenticationPrincipal UserDetailsImpl userDetails){
+		Boolean check = userService.getRoleChangeRequest(userDetails.getUser());
+		return ResponseEntity.status(HttpStatus.OK.value())
+			.body(CommonResponse.<Boolean>builder()
+				.data(check)
+				.msg("get roleChange request successful")
+				.build());
+	}
+
 	@PatchMapping("/role/change/request/{id}/approve")
 	public ResponseEntity<CommonResponse<Void>> updateUserRole(
 		@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long id) {
@@ -221,7 +231,7 @@ public class UserController {
 				.build());
 	}
 
-	@GetMapping("/role/change/request")
+	@GetMapping("/role/change/requests")
 	public ResponseEntity<CommonResponse<List<RoleChangeResponseDto>>> getRoleChangeRequests(
 		@AuthenticationPrincipal UserDetailsImpl userDetails,
 		@RequestParam(name = "page", defaultValue = "1") int page,
