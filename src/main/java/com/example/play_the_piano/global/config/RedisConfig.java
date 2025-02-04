@@ -38,7 +38,7 @@ public class RedisConfig {
 	@Bean
 	public RedissonClient redissonClient() {
 		Config config = new Config();
-		config.useSingleServer().setAddress(REDISSON_HOST_PREFIX + host + ":" + port);
+		config.useSingleServer().setAddress(REDISSON_HOST_PREFIX + host + ":" + port).setSslEnableEndpointIdentification(true);
 		return Redisson.create(config);
 	}
 
@@ -47,8 +47,12 @@ public class RedisConfig {
 		RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
 		redisStandaloneConfiguration.setHostName(host);
 		redisStandaloneConfiguration.setPort(port);
-		return new LettuceConnectionFactory(redisStandaloneConfiguration);
+		LettuceConnectionFactory factory = new LettuceConnectionFactory(redisStandaloneConfiguration);
+		factory.setUseSsl(true);
+
+		return factory;
 	}
+
 
 	@Bean
 	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
