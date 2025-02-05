@@ -19,6 +19,9 @@ jobs:
           java-version: '23'
           distribution: 'temurin'
 
+      - name: Give execute permissions to gradlew
+        run: chmod +x gradlew
+
       - name: Build with Gradle
         run: ./gradlew build --no-daemon
 
