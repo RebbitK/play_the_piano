@@ -29,9 +29,6 @@ jobs:
       - name: Give execute permissions to gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew build --no-daemon
-
       - name: ZIP 파일 생성
         run: zip -qq -r ./$GITHUB_SHA.zip .
         shell: bash
