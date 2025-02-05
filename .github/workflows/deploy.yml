@@ -29,6 +29,9 @@ jobs:
       - name: Give execute permissions to gradlew
         run: chmod +x gradlew
 
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon
+
       - name: ZIP 파일 생성
         run: zip -qq -r ./$GITHUB_SHA.zip .
         shell: bash
@@ -41,7 +44,10 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip
+        run: aws s3 cp ./$GITHUB_SHA.zip s3://$BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip --region ap-northeast-2
+        env:
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
 
       - name: Code Deploy To EC2 instance
         run: aws deploy create-deployment \
@@ -49,3 +55,8 @@ jobs:
           --deployment-config-name CodeDeployDefault.AllAtOnce \
           --deployment-group-name $DEPLOYMENT_GROUP_NAME \
           --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
+        env:
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
+          CODE_DEPLOY_APP_NAME: ${{ secrets.CODE_DEPLOY_APP_NAME }}
+          DEPLOYMENT_GROUP_NAME: ${{ secrets.DEPLOYMENT_GROUP_NAME }}
