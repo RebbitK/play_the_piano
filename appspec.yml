@@ -1,0 +1,21 @@
+# 0.0 버전만 지원하고 있습니다.
+version: 0.0
+os: linux
+
+# 배포할 파일 및 디렉토리를 정의합니다.
+files:
+  - source: /
+    destination: /home/ubuntu/playthepiano
+
+# 권한을 정의합니다.
+permissions:
+  - object: /home/ubuntu/playthepiano/
+    owner: ubuntu
+    group: ubuntu
+
+# 배포단계에서 진행하는 훅 스크립트를 정의합니다.
+hooks:
+  AfterInstall:
+    - location: scripts/deploy.sh
+      timeout: 60
+      runas: ubuntu
