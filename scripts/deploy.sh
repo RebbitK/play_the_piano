@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-REPOSITORY=/home/ubuntu/omnmm
+REPOSITORY=/home/ubuntu/playthepiano
 cd $REPOSITORY
 
-APP_NAME=omnmm
+APP_NAME=playthepiano
 JAR_NAME=$(ls $REPOSITORY/build/libs/ | grep 'SNAPSHOT.jar' | tail -n 1)
 JAR_PATH=$REPOSITORY/build/libs/$JAR_NAME
 
