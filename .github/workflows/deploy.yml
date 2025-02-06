@@ -32,7 +32,7 @@ jobs:
       - name: Gradle로 빌드
         uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25
         with:
-          arguments: build -x test
+          arguments: clean build -x test
 
       - name: ZIP 파일 생성
         run: zip -qq -r ./$GITHUB_SHA.zip .
